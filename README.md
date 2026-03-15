@@ -34,6 +34,8 @@ Most fashion inspiration tools prioritize trends. I wanted to explore what a too
 - Run npm run dev
 - Open http://localhost:5173
 
+`npm run dev` starts both the Vite app and the local secure API server, so the Claude request works the same way during development and on Vercel.
+
 ## Part of a larger exploration
 
 This prototype is one piece of a broader portfolio exploring how design and technology can support more meaningful, human centered digital experiences.
