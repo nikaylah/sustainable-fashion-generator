@@ -1,6 +1,13 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button, Card, CardBody, Divider } from "@heroui/react";
 import { AnimatePresence, motion } from "framer-motion";
+
+const LOADING_PHRASES = [
+  "Reading your values...",
+  "Exploring fiber combinations...",
+  "Considering your climate...",
+  "Shaping three directions...",
+];
 
 function MoodboardHeader({ direction }) {
   return (
@@ -23,12 +30,80 @@ function MoodboardHeader({ direction }) {
   );
 }
 
+function LoadingCard() {
+  const [phraseIndex, setPhraseIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setPhraseIndex((current) => (current + 1) % LOADING_PHRASES.length);
+    }, 2000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  return (
+    <Card className="border border-sand/50 bg-white shadow-[0_30px_80px_-50px_rgba(80,70,55,0.45)]">
+      <CardBody className="gap-6 p-6 sm:p-8">
+        <div className="skeleton-block h-[200px] w-full rounded-[28px] border border-sand/60 bg-cream" />
+        <div className="space-y-3">
+          <div className="skeleton-block h-4 w-28 rounded-full bg-stone-200/70" />
+          <div className="skeleton-block h-10 w-3/4 rounded-full bg-stone-200/70" />
+          <div className="space-y-2">
+            <div className="skeleton-block h-4 w-full rounded-full bg-stone-200/70" />
+            <div className="skeleton-block h-4 w-5/6 rounded-full bg-stone-200/70" />
+          </div>
+        </div>
+        <div className="space-y-3">
+          <div className="skeleton-block h-4 w-36 rounded-full bg-stone-200/70" />
+          <div className="grid gap-3">
+            {Array.from({ length: 2 }).map((_, index) => (
+              <div
+                key={index}
+                className="skeleton-block h-16 rounded-2xl bg-cream"
+              />
+            ))}
+          </div>
+        </div>
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={LOADING_PHRASES[phraseIndex]}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="font-heading text-sm italic text-stone-500"
+          >
+            {LOADING_PHRASES[phraseIndex]}
+          </motion.p>
+        </AnimatePresence>
+      </CardBody>
+    </Card>
+  );
+}
+
 export default function ResultCard({ result, onGenerateAnother, isLoading }) {
   const [expandedIndex, setExpandedIndex] = useState(null);
+  const directions = useMemo(
+    () => (result?.directions || []).filter(Boolean),
+    [result?.directions]
+  );
+
+  useEffect(() => {
+    if (!directions.length) {
+      setExpandedIndex(null);
+      return;
+    }
+
+    if (expandedIndex !== null && !directions[expandedIndex]) {
+      setExpandedIndex(null);
+    }
+  }, [directions, expandedIndex]);
 
   return (
     <div className="flex h-full w-full flex-col gap-5">
-      {result.directions.map((direction, index) => {
+      {isLoading ? <LoadingCard /> : null}
+
+      {directions.map((direction, index) => {
         const isExpanded = expandedIndex === index;
 
         return (

@@ -3,7 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 const MODEL = "claude-sonnet-4-20250514";
 
 const SYSTEM_PROMPT =
-  "You are a sustainable fashion designer who creates outfit concepts based on natural fibers, climate needs, and personal values. Always respond in JSON format with this exact top-level shape: { directions: [ ... ] }. The directions array must contain exactly 3 objects. Each object must use these exact keys: outfitName, outfitDescription, fabrics (array of {name, description}), colorPalette (array of {name, hex}), stylingNotes, sustainabilityInsight, aiReasoning.";
+  "You are a sustainable fashion designer. Generate ONE outfit direction based on the user's inputs. Respond only in JSON with these keys: outfitName, outfitDescription, fabrics (array of {name, description}), colorPalette (array of {name, hex}), stylingNotes, sustainabilityInsight, aiReasoning.";
 
 function stripCodeFences(text) {
   return text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/, "");
@@ -57,19 +57,9 @@ function validateDirection(result) {
   return result;
 }
 
-export function validateResult(result) {
-  const hasDirections = result && Array.isArray(result.directions) && result.directions.length === 3;
+export const validateResult = validateDirection;
 
-  if (!hasDirections) {
-    throw new Error("the ai response was missing the 3 outfit directions.");
-  }
-
-  return {
-    directions: result.directions.map(validateDirection),
-  };
-}
-
-export async function generateOutfitFromSelections(selections, apiKey) {
+export async function generateOutfitFromSelections(selections, apiKey, directionIndex = 0) {
   if (!apiKey) {
     throw new Error("missing anthropic api key");
   }
@@ -77,19 +67,20 @@ export async function generateOutfitFromSelections(selections, apiKey) {
   const anthropic = new Anthropic({ apiKey });
   const response = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 1800,
+    max_tokens: 900,
     system: SYSTEM_PROMPT,
     messages: [
       {
         role: "user",
-        content: `Create 3 distinct outfit directions for these preferences:
+        content: `Create one outfit direction for these preferences:
 Climate: ${selections.climate}
 Fiber Preference: ${selections.fiberPreference}
 Style Vibe: ${selections.styleVibe}
 Color Palette: ${selections.colorPalette}
 Design Priorities: ${selections.designPriorities.join(", ")}
+Variation Number: ${directionIndex + 1}
 
-Make each direction feel clearly different while still matching the same values. Return valid JSON only.`,
+Make this direction clearly distinct from other possible options while still matching the same values. Return valid JSON only.`,
       },
     ],
   });

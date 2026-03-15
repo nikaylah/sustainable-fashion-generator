@@ -16,25 +16,16 @@ function validateDirection(result) {
   return result;
 }
 
-function validateResult(result) {
-  const hasDirections = result && Array.isArray(result.directions) && result.directions.length === 3;
-
-  if (!hasDirections) {
-    throw new Error("the ai response was missing the 3 outfit directions.");
-  }
-
-  return {
-    directions: result.directions.map(validateDirection),
-  };
-}
-
-export async function generateFashionOutfit(selections) {
+async function fetchDirection(selections, directionIndex) {
   const response = await fetch("/api/generate", {
     method: "POST",
     headers: {
       "content-type": "application/json",
     },
-    body: JSON.stringify(selections),
+    body: JSON.stringify({
+      ...selections,
+      directionIndex,
+    }),
   });
 
   if (!response.ok) {
@@ -42,5 +33,32 @@ export async function generateFashionOutfit(selections) {
     throw new Error(errorData?.error || "the ai request didn't go through. check the key and try again.");
   }
 
-  return validateResult(await response.json());
+  return validateDirection(await response.json());
+}
+
+export async function generateFashionOutfit(selections, onDirection) {
+  const requests = [0, 1, 2].map((directionIndex) =>
+    fetchDirection(selections, directionIndex).then((direction) => {
+      onDirection?.(directionIndex, direction);
+      return {
+        directionIndex,
+        direction,
+      };
+    })
+  );
+
+  const settled = await Promise.allSettled(requests);
+  const fulfilled = settled
+    .filter((entry) => entry.status === "fulfilled")
+    .map((entry) => entry.value)
+    .sort((a, b) => a.directionIndex - b.directionIndex);
+
+  if (!fulfilled.length) {
+    const firstError = settled.find((entry) => entry.status === "rejected");
+    throw firstError?.reason || new Error("the ai request didn't go through. check the key and try again.");
+  }
+
+  return {
+    directions: fulfilled.map((entry) => entry.direction),
+  };
 }

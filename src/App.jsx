@@ -26,11 +26,19 @@ export default function App() {
     setSelections(nextSelections);
     setIsLoading(true);
     setError("");
+    setResult({ directions: [] });
+    setCardKey((value) => value + 1);
 
     try {
-      const generated = await generateFashionOutfit(nextSelections);
+      const generated = await generateFashionOutfit(nextSelections, (directionIndex, direction) => {
+        setResult((current) => {
+          const directions = current?.directions ? [...current.directions] : [];
+          directions[directionIndex] = direction;
+
+          return { directions };
+        });
+      });
       setResult(generated);
-      setCardKey((value) => value + 1);
     } catch (generationError) {
       setError(
         generationError instanceof Error
@@ -70,7 +78,7 @@ export default function App() {
                 canGenerate={canGenerate}
               />
 
-              {result ? (
+              {result?.directions?.length ? (
                 <div className="rounded-[28px] border-l-[3px] border-sage bg-[#F5F0E8] px-5 py-4 shadow-[0_18px_40px_-30px_rgba(80,70,55,0.45)]">
                   <p className="font-heading text-sm italic leading-6 text-stone-700">
                     A design experiment exploring what clothing concepts look like when

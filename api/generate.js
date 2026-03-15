@@ -21,9 +21,14 @@ export default async function handler(req, res) {
 
   try {
     const selections = validateSelections(parseSelections(req.body));
+    const directionIndex =
+      Number.isInteger(selections.directionIndex) && selections.directionIndex >= 0
+        ? selections.directionIndex
+        : 0;
     const result = await generateOutfitFromSelections(
       selections,
-      process.env.ANTHROPIC_API_KEY
+      process.env.ANTHROPIC_API_KEY,
+      directionIndex
     );
 
     return res.status(200).json(result);
