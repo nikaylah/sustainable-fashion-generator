@@ -1,3 +1,16 @@
+const VISUAL_FLAIR = [
+  "asymmetrical hemline",
+  "oversized statement collar",
+  "modular layering system",
+  "raw edge finishing",
+  "gathered volume at sleeves",
+  "intentional visible seaming",
+  "wrap-style front closure",
+  "draped cowl detail",
+  "elongated proportions",
+  "structured yoke detail",
+];
+
 function validateDirection(result) {
   const hasBasics =
     result &&
@@ -17,12 +30,16 @@ function validateDirection(result) {
 }
 
 async function fetchDirection(selections) {
+  const randomFlair = VISUAL_FLAIR[Math.floor(Math.random() * VISUAL_FLAIR.length)];
   const response = await fetch("/api/generate", {
     method: "POST",
     headers: {
       "content-type": "application/json",
     },
-    body: JSON.stringify(selections),
+    body: JSON.stringify({
+      ...selections,
+      visualFlair: randomFlair,
+    }),
   });
 
   if (!response.ok) {

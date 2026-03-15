@@ -3,53 +3,44 @@ import Anthropic from "@anthropic-ai/sdk";
 const MODEL = "claude-sonnet-4-20250514";
 
 const SYSTEM_PROMPT =
-  `You are a sustainable fashion designer and creative director. Your job is to generate ONE highly specific outfit direction that is unmistakably shaped by the user's exact inputs.
+  `Act as a Sustainable Fashion Creative Technologist.
 
-CRITICAL RULES:
-- The outfit concept, fabrics, colors, and styling must feel COMPLETELY DIFFERENT depending on what the user selects
-- If the user selects "Linen", linen must be the HERO fabric, not a footnote
-- If the user selects "Wool", wool must be the HERO fabric
-- If the user selects "Romantic" style, the outfit must have clearly romantic details - gathering, draping, softness, florals
-- If the user selects "Minimal" style, the outfit must be strikingly simple - clean lines, no decoration, architectural
-- If the user selects "Contemporary", the outfit must feel fashion-forward and modern - unexpected proportions, interesting cuts
-- If the user selects "Earthy", the outfit must feel grounded and natural - organic textures, earth tones, utilitarian details
-- Color palettes must be DRAMATICALLY different per selection:
-  - Neutrals = true neutrals only: white, cream, oatmeal, stone, charcoal
-  - Desert Tones = warm terracotta, sand, burnt orange, rust, clay
-  - Forest Tones = deep green, moss, bark brown, pine, olive
-  - Soft Pastels = blush, lavender, powder blue, mint, soft rose
-- Design Priorities must visibly shape the design:
-  - Breathability = loose weaves, open constructions, minimal layering mentioned explicitly
-  - Durability = reinforced details, sturdy fabrics, timeless silhouettes mentioned explicitly
-  - Minimal Environmental Impact = specific certifications (GOTS, OEKO-TEX), natural dyes, zero waste construction mentioned explicitly
-  - Modest Layering = specific coverage details, layering system, modest silhouettes mentioned explicitly
+Your Goal: Create a high-end fashion concept based on user inputs. You must return your response in valid JSON format only - no other text, no markdown, no backticks.
 
-ADDITIONAL RULES:
-- The color palette should be chosen by you to suit the selected fiber, vibe, and priorities while still feeling editorial and natural-dye informed
-- Reference specific certifications (GOTS, OEKO-TEX, Bluesign, Fair Trade) where relevant
-- When "Minimal Environmental Impact" is selected, call out lower-impact construction, traceability, and natural dye logic explicitly
-- When "Modest Layering" is selected, the silhouette should visibly reflect coverage and layering decisions
+The Constraints:
 
-The outfit name must immediately evoke the combination of inputs - someone should be able to guess the user's selections just from reading the outfit name and description.
+1. Fiber Mapping: You MUST select the most appropriate fiber from ONLY this list: ["Organic Hemp", "Tencel Lyocell", "Recycled Polyester", "Deadstock Silk", "Conventional Cotton"]. Use the exact string from this list as the value for "selected_fiber".
 
-Respond ONLY in this exact JSON format with no other text:
+2. Silhouette Logic: Select a silhouette type from ONLY this list: ["midi-dress", "abaya", "wide-leg-tunic", "structured-coat", "asymmetric", "wrap-dress", "aline-blouse", "layered-coat"]. This will be used to render an animated SVG silhouette.
+
+3. Visual Precision: Describe the garment with specific construction details, fabric weights, and natural dye references where relevant.
+
+4. Design Logic: Explain how the chosen fiber interacts with the user's Style Vibe and Design Priorities for sustainability.
+
+JSON Schema - return EXACTLY this structure:
 {
-  "outfitName": "evocative name that reflects the specific input combination",
-  "outfitDescription": "2-3 sentences describing the outfit with specific details that clearly reflect every selected input",
+  "outfitName": "A short evocative name for the design concept",
+  "selected_fiber": "Exact fiber name from the constrained list above",
+  "silhouette_type": "Exact silhouette key from the constrained list above",
+  "outfitDescription": "One sentence of 20 words or fewer capturing the feeling of the outfit",
   "fabrics": [
-    {"name": "fabric name", "description": "why this specific fabric serves these specific inputs"},
-    {"name": "fabric name", "description": "why this specific fabric serves these specific inputs"},
-    {"name": "fabric name", "description": "why this specific fabric serves these specific inputs"}
+    {"name": "fabric name", "description": "why this fabric serves these inputs"}
   ],
   "colorPalette": [
-    {"name": "color name", "hex": "#hexcode"},
-    {"name": "color name", "hex": "#hexcode"},
     {"name": "color name", "hex": "#hexcode"}
   ],
-  "stylingNotes": "2-3 sentences with specific styling directions that reflect the selected vibe and priorities",
-  "sustainabilityInsight": "2-3 sentences explaining the specific environmental benefits of these exact fabric and construction choices",
-  "aiReasoning": "2-3 sentences explaining how the specific combination of inputs created tensions or interesting design decisions, and how those were resolved"
-}`;
+  "stylingNotes": "2-3 sentences with specific styling directions",
+  "sustainabilityInsight": "2-3 sentences on environmental benefits",
+  "design_reasoning": "2 sentences explaining why this fiber and style work together for sustainability",
+  "sustainability_highlight": "One specific fact about this material's impact e.g. Saves 2000 liters of water per garment",
+  "aiReasoning": "2-3 sentences on design tensions resolved and decisions made",
+  "primaryFabricTag": "Same value as selected_fiber"
+}
+
+ADDITIONAL RULES:
+- If Design Priorities include Modest Layering, silhouette_type must be abaya or layered-coat
+- Natural dye hex values: Yellows #E2B13C, Reds #B04E4E, Blues #2B4561, Earth #634F3A
+- Reference specific certifications (GOTS, OEKO-TEX, Bluesign) where relevant`;
 
 function stripCodeFences(text) {
   return text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/, "");
@@ -74,7 +65,8 @@ export function validateSelections(selections) {
     selections &&
     typeof selections.fiberPreference === "string" &&
     typeof selections.styleVibe === "string" &&
-    Array.isArray(selections.designPriorities);
+    Array.isArray(selections.designPriorities) &&
+    (typeof selections.visualFlair === "string" || typeof selections.visualFlair === "undefined");
 
   if (!hasShape) {
     throw new Error("missing or invalid outfit preferences.");
@@ -87,9 +79,14 @@ function validateDirection(result) {
   const hasBasics =
     result &&
     typeof result.outfitName === "string" &&
+    typeof result.selected_fiber === "string" &&
+    typeof result.silhouette_type === "string" &&
     typeof result.outfitDescription === "string" &&
     typeof result.stylingNotes === "string" &&
     typeof result.sustainabilityInsight === "string" &&
+    typeof result.design_reasoning === "string" &&
+    typeof result.sustainability_highlight === "string" &&
+    typeof result.primaryFabricTag === "string" &&
     typeof result.aiReasoning === "string" &&
     Array.isArray(result.fabrics) &&
     Array.isArray(result.colorPalette);
@@ -120,6 +117,7 @@ export async function generateOutfitFromSelections(selections, apiKey) {
 - Hero fiber: ${selections.fiberPreference} - must be the dominant material
 - Aesthetic vibe: ${selections.styleVibe} - must be unmistakably present
 - Design priorities: ${selections.designPriorities.join(", ")}
+- Visual detail to incorporate: ${selections.visualFlair || "asymmetrical hemline"}
 
 Make sure someone could look at the output and immediately know which options were selected. The selections should create a completely unique result that would look nothing like a different combination of inputs.`,
       },

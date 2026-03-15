@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Button, Card, CardBody } from "@heroui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import FashionSilhouette from "./FashionSilhouette";
+import SustainabilityPanel from "./SustainabilityPanel";
 import linenImage from "../assets/swatches/linen.jpg";
 import cottonImage from "../assets/swatches/cotton.jpg";
 import cottonFabricImage from "../assets/swatches/cottonfabric.jpg";
@@ -149,6 +150,11 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
                   </div>
                 ))}
               </div>
+
+              <SustainabilityPanel
+                selectedFiber={result.selected_fiber}
+                sustainabilityHighlight={result.sustainability_highlight}
+              />
             </div>
 
             <div className="grid gap-8 md:grid-cols-2">
