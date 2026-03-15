@@ -50,15 +50,7 @@ const server = http.createServer(async (req, res) => {
 
   try {
     const selections = validateSelections(await readJsonBody(req));
-    const directionIndex =
-      Number.isInteger(selections.directionIndex) && selections.directionIndex >= 0
-        ? selections.directionIndex
-        : 0;
-    const result = await generateOutfitFromSelections(
-      selections,
-      process.env.ANTHROPIC_API_KEY,
-      directionIndex
-    );
+    const result = await generateOutfitFromSelections(selections, process.env.ANTHROPIC_API_KEY);
 
     return sendJson(res, 200, result);
   } catch (error) {
