@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Card, CardBody } from "@heroui/react";
+import { Card, CardBody, Chip } from "@heroui/react";
 import GeneratorForm from "./components/GeneratorForm";
 import ResultCard from "./components/ResultCard";
 import { generateFashionOutfit } from "./api/claude";
@@ -46,7 +46,7 @@ export default function App() {
     <main className="min-h-screen bg-cream px-4 py-8 text-stone-800 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
         <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
-          <Card className="border border-sage/15 bg-white/80 shadow-[0_28px_80px_-45px_rgba(124,154,126,0.6)] backdrop-blur">
+          <Card className="border border-sage/15 bg-white/80 shadow-[0_28px_80px_-45px_rgba(124,154,126,0.6)] backdrop-blur md:sticky md:top-8">
             <CardBody className="gap-6 p-6 sm:p-8">
               <div className="space-y-3">
                 <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sage/80">
@@ -69,6 +69,30 @@ export default function App() {
                 isLoading={isLoading}
                 canGenerate={canGenerate}
               />
+
+              {result ? (
+                <div className="rounded-[28px] border-l-[3px] border-sage bg-[#F5F0E8] px-5 py-4 shadow-[0_18px_40px_-30px_rgba(80,70,55,0.45)]">
+                  <p className="font-heading text-sm italic leading-6 text-stone-700">
+                    A design experiment exploring what clothing concepts look like when
+                    sustainability values shape the creative process — not trends.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {selections.designPriorities.map((priority) => (
+                      <Chip
+                        key={priority}
+                        radius="full"
+                        variant="flat"
+                        classNames={{
+                          base: "bg-white/80 border border-sand/50",
+                          content: "text-xs font-medium text-stone-700",
+                        }}
+                      >
+                        {priority}
+                      </Chip>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
 
               {error ? (
                 <div className="rounded-3xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
@@ -112,8 +136,8 @@ export default function App() {
                       <div className="space-y-2">
                         <h2 className="font-heading text-3xl text-stone-900">ready when you are</h2>
                         <p className="mx-auto max-w-md text-base leading-7 text-stone-600">
-                          your outfit concept will show up here with fabric picks, color swatches,
-                          styling notes, and the ai reasoning behind it.
+                          your outfit directions will show up here with fabric picks, color
+                          swatches, styling notes, and the ai reasoning behind them.
                         </p>
                       </div>
                     </CardBody>

@@ -1,4 +1,4 @@
-function validateResult(result) {
+function validateDirection(result) {
   const hasBasics =
     result &&
     typeof result.outfitName === "string" &&
@@ -14,6 +14,18 @@ function validateResult(result) {
   }
 
   return result;
+}
+
+function validateResult(result) {
+  const hasDirections = result && Array.isArray(result.directions) && result.directions.length === 3;
+
+  if (!hasDirections) {
+    throw new Error("the ai response was missing the 3 outfit directions.");
+  }
+
+  return {
+    directions: result.directions.map(validateDirection),
+  };
 }
 
 export async function generateFashionOutfit(selections) {
