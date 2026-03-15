@@ -1,26 +1,67 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@heroui/react";
 
-const SINGLE_SELECT_FIELDS = [
+const PRIMARY_SINGLE_SELECT_FIELDS = [
   {
     key: "climate",
     label: "Climate",
+    icon: "🌤",
+    tintClass: "bg-[#EEF4F8]",
     options: ["Warm", "Mild", "Cold"],
   },
   {
     key: "fiberPreference",
     label: "Fiber Preference",
-    options: ["Linen", "Organic Cotton", "Bamboo", "Wool"],
+    icon: "🌿",
+    tintClass: "bg-[#EEF2EE]",
+    options: [
+      "Linen",
+      "Organic Cotton",
+      "Bamboo",
+      "Wool (Merino)",
+      "Hemp",
+      "Tencel/Lyocell",
+      "Alpaca",
+      "Silk",
+    ],
   },
   {
     key: "styleVibe",
     label: "Style Vibe",
+    icon: "✨",
+    tintClass: "bg-[#F8F0F0]",
     options: ["Minimal", "Earthy", "Romantic", "Contemporary"],
   },
   {
     key: "colorPalette",
     label: "Color Palette",
+    icon: "🎨",
+    tintClass: "bg-[#F3F0F8]",
     options: ["Neutrals", "Desert Tones", "Forest Tones", "Soft Pastels"],
+  },
+];
+
+const SECONDARY_SINGLE_SELECT_FIELDS = [
+  {
+    key: "opacityPreference",
+    label: "Opacity Preference",
+    icon: "👁",
+    tintClass: "bg-[#F0F0F8]",
+    options: ["Sheer/Layering", "Semi-Opaque", "Fully Opaque"],
+  },
+  {
+    key: "activityLevel",
+    label: "Activity Level",
+    icon: "🚶",
+    tintClass: "bg-[#F0F5F0]",
+    options: ["Office/Static", "Daily/Walking", "Active/Commuting"],
+  },
+  {
+    key: "careCapacity",
+    label: "Care Capacity",
+    icon: "🫧",
+    tintClass: "bg-[#F5F0F5]",
+    options: ["Machine Wash", "Hand Wash", "Dry Clean Only"],
   },
 ];
 
@@ -30,6 +71,24 @@ const PRIORITY_OPTIONS = [
   "Minimal Environmental Impact",
   "Modest Layering",
 ];
+
+const ETHICS_OPTIONS = [
+  "Vegan Only",
+  "Compostable/Biodegradable",
+  "Local Sourcing",
+  "Fair Trade",
+];
+
+const FIBER_TOOLTIPS = {
+  Linen: "Breathability 10/10 · Best for hot/humid climates · Biodegradable",
+  "Organic Cotton": "Breathability 8/10 · Best for mild climates · GOTS certifiable",
+  Bamboo: "Breathability 9/10 · All-season · Fast drying",
+  "Wool (Merino)": "Breathability 7/10 · Best for cold/mild · Wicks moisture as vapor",
+  Hemp: "Breathability 9/10 · Best for warm/arid · Antimicrobial",
+  "Tencel/Lyocell": "Breathability 9/10 · Best for warm/humid · Very high moisture wicking",
+  Alpaca: "Breathability 6/10 · Best for extreme cold · Ultra-high thermal regulation",
+  Silk: "Breathability 7/10 · Best for mild climates · Protein fiber, takes natural dyes well",
+};
 
 export default function GeneratorForm({
   selections,
@@ -47,7 +106,11 @@ export default function GeneratorForm({
           selections.fiberPreference ||
           selections.styleVibe ||
           selections.colorPalette ||
-          selections.designPriorities.length
+          selections.designPriorities.length ||
+          selections.opacityPreference ||
+          selections.activityLevel ||
+          selections.careCapacity ||
+          selections.specificEthics.length
       ),
     [selections]
   );
@@ -78,6 +141,19 @@ export default function GeneratorForm({
     });
   }
 
+  function toggleEthic(ethic) {
+    setSelections((current) => {
+      const exists = current.specificEthics.includes(ethic);
+
+      return {
+        ...current,
+        specificEthics: exists
+          ? current.specificEthics.filter((item) => item !== ethic)
+          : [...current.specificEthics, ethic],
+      };
+    });
+  }
+
   function handleGeneratePress() {
     if (!hasAnySelection) {
       setShowValidationMessage(true);
@@ -90,19 +166,20 @@ export default function GeneratorForm({
 
   return (
     <div className="space-y-6">
-      {SINGLE_SELECT_FIELDS.map((field) => (
-        <div key={field.key} className="space-y-3">
+      {PRIMARY_SINGLE_SELECT_FIELDS.map((field) => (
+        <div key={field.key} className="space-y-3 border-b border-[#EDE8E0] pb-4">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">
-              {field.label}
+            <h2 className="flex items-center gap-2 text-[0.8rem] font-semibold tracking-[0.05em] text-[#8B7355]">
+              <span aria-hidden="true">{field.icon}</span>
+              <span>{field.label}</span>
             </h2>
             <span className="text-sm text-stone-400">{selections[field.key] || ""}</span>
           </div>
           <div className="flex flex-wrap gap-3">
             {field.options.map((option) => {
               const selected = selections[field.key] === option;
-
-              return (
+              const tooltip = field.key === "fiberPreference" ? FIBER_TOOLTIPS[option] : null;
+              const button = (
                 <Button
                   key={option}
                   radius="full"
@@ -110,22 +187,30 @@ export default function GeneratorForm({
                   className={
                     selected
                       ? "chip-selected min-h-11"
-                      : "chip-unselected min-h-11 border-sand/60 bg-white text-stone-700"
+                      : `chip-unselected min-h-11 border-sand/60 ${field.tintClass} text-stone-700`
                   }
                   onPress={() => updateSelection(field.key, option)}
                 >
                   {option}
                 </Button>
               );
+
+              return (
+                <span key={option} className="fiber-chip-wrap">
+                  {button}
+                  {tooltip ? <span className="fiber-chip-tooltip">{tooltip}</span> : null}
+                </span>
+              );
             })}
           </div>
         </div>
       ))}
 
-      <div className="space-y-3">
+      <div className="space-y-3 border-b border-[#EDE8E0] pb-4">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">
-            Design Priorities
+          <h2 className="flex items-center gap-2 text-[0.8rem] font-semibold tracking-[0.05em] text-[#8B7355]">
+            <span aria-hidden="true">🌱</span>
+            <span>Design Priorities</span>
           </h2>
           <span className="text-sm text-stone-400">
             {selections.designPriorities.length} selected
@@ -143,9 +228,75 @@ export default function GeneratorForm({
                 className={
                   selected
                     ? "chip-selected min-h-11"
-                    : "chip-unselected min-h-11 border-sand/60 bg-white text-stone-700"
+                    : "chip-unselected min-h-11 border-sand/60 bg-[#EDF2ED] text-stone-700"
                 }
                 onPress={() => togglePriority(option)}
+              >
+                {option}
+              </Button>
+            );
+          })}
+        </div>
+      </div>
+
+      {SECONDARY_SINGLE_SELECT_FIELDS.map((field) => (
+        <div key={field.key} className="space-y-3 border-b border-[#EDE8E0] pb-4">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="flex items-center gap-2 text-[0.8rem] font-semibold tracking-[0.05em] text-[#8B7355]">
+              <span aria-hidden="true">{field.icon}</span>
+              <span>{field.label}</span>
+            </h2>
+            <span className="text-sm text-stone-400">{selections[field.key] || ""}</span>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {field.options.map((option) => {
+              const selected = selections[field.key] === option;
+
+              return (
+                <Button
+                  key={option}
+                  radius="full"
+                  variant={selected ? "solid" : "bordered"}
+                  className={
+                    selected
+                      ? "chip-selected min-h-11"
+                      : `chip-unselected min-h-11 border-sand/60 ${field.tintClass} text-stone-700`
+                  }
+                  onPress={() => updateSelection(field.key, option)}
+                >
+                  {option}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+
+      <div className="space-y-3 border-b border-[#EDE8E0] pb-4">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="flex items-center gap-2 text-[0.8rem] font-semibold tracking-[0.05em] text-[#8B7355]">
+            <span aria-hidden="true">🌍</span>
+            <span>Specific Ethics</span>
+          </h2>
+          <span className="text-sm text-stone-400">
+            {selections.specificEthics.length} selected
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          {ETHICS_OPTIONS.map((option) => {
+            const selected = selections.specificEthics.includes(option);
+
+            return (
+              <Button
+                key={option}
+                radius="full"
+                variant={selected ? "solid" : "bordered"}
+                className={
+                  selected
+                    ? "chip-selected min-h-11"
+                    : "chip-unselected min-h-11 border-sand/60 bg-[#F0F5F0] text-stone-700"
+                }
+                onPress={() => toggleEthic(option)}
               >
                 {option}
               </Button>

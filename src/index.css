@@ -47,6 +47,36 @@ body {
     opacity 0.3s ease;
 }
 
+.fiber-chip-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.fiber-chip-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 220px;
+  border-radius: 8px;
+  background: #2d2d2d;
+  padding: 8px 12px;
+  color: white;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 20;
+}
+
+@media (hover: hover) {
+  .fiber-chip-wrap:hover .fiber-chip-tooltip {
+    opacity: 1;
+  }
+}
+
 .generate-button-loading {
   background: #b8c9b8;
   color: rgb(255 255 255 / 60%);
@@ -67,6 +97,54 @@ body {
   animation: skeleton-pulse 1.8s ease-in-out infinite;
 }
 
+.fashion-silhouette-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: float 4s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+.fashion-silhouette-svg {
+  overflow: visible;
+}
+
+.silhouette-path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: draw 1.8s ease forwards;
+}
+
+.silhouette-fill {
+  opacity: 0;
+  animation: silhouette-fill-in 0.45s ease forwards;
+  animation-delay: 1.8s;
+}
+
+.silhouette-dot {
+  opacity: 0;
+  animation: silhouette-dot-in 0.35s ease forwards;
+  animation-delay: 1.95s;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes silhouette-fill-in {
+  to {
+    opacity: 0.15;
+  }
+}
+
+@keyframes silhouette-dot-in {
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes button-spin {
   to {
     transform: rotate(360deg);
@@ -81,5 +159,16 @@ body {
 
   50% {
     opacity: 0.9;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-6px);
   }
 }

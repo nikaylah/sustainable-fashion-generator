@@ -11,6 +11,10 @@ const INITIAL_SELECTIONS = {
   styleVibe: "",
   colorPalette: "",
   designPriorities: [],
+  opacityPreference: "",
+  activityLevel: "",
+  careCapacity: "",
+  specificEthics: [],
 };
 
 export default function App() {
@@ -26,18 +30,11 @@ export default function App() {
     setSelections(nextSelections);
     setIsLoading(true);
     setError("");
-    setResult({ directions: [] });
+    setResult(null);
     setCardKey((value) => value + 1);
 
     try {
-      const generated = await generateFashionOutfit(nextSelections, (directionIndex, direction) => {
-        setResult((current) => {
-          const directions = current?.directions ? [...current.directions] : [];
-          directions[directionIndex] = direction;
-
-          return { directions };
-        });
-      });
+      const generated = await generateFashionOutfit(nextSelections);
       setResult(generated);
     } catch (generationError) {
       setError(
@@ -78,14 +75,17 @@ export default function App() {
                 canGenerate={canGenerate}
               />
 
-              {result?.directions?.length ? (
+              {result ? (
                 <div className="rounded-[28px] border-l-[3px] border-sage bg-[#F5F0E8] px-5 py-4 shadow-[0_18px_40px_-30px_rgba(80,70,55,0.45)]">
                   <p className="font-heading text-sm italic leading-6 text-stone-700">
                     A design experiment exploring what clothing concepts look like when
                     sustainability values shape the creative process — not trends.
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {selections.designPriorities.map((priority) => (
+                    {[
+                      ...selections.designPriorities,
+                      ...selections.specificEthics,
+                    ].map((priority) => (
                       <Chip
                         key={priority}
                         radius="full"
@@ -123,6 +123,7 @@ export default function App() {
                 >
                   <ResultCard
                     result={result}
+                    selections={selections}
                     isLoading={isLoading}
                     onGenerateAnother={() => handleGenerate()}
                   />
@@ -144,8 +145,8 @@ export default function App() {
                       <div className="space-y-2">
                         <h2 className="font-heading text-3xl text-stone-900">ready when you are</h2>
                         <p className="mx-auto max-w-md text-base leading-7 text-stone-600">
-                          your outfit directions will show up here with fabric picks, color
-                          swatches, styling notes, and the ai reasoning behind them.
+                          your outfit concept will show up here with fabric picks, color swatches,
+                          styling notes, and the ai reasoning behind it.
                         </p>
                       </div>
                     </CardBody>
