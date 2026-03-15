@@ -18,7 +18,7 @@ describe("InsightPanel", () => {
     expect(screen.getByText((_, node) => node?.textContent === "Material: Organic Hemp")).toBeInTheDocument();
   });
 
-  it("returns nothing when the fiber is unknown", () => {
+  it("returns nothing when the fiber is unknown and no fallback exists", () => {
     const { container } = render(
       <InsightPanel
         selectedFiber="Mystery Fiber"
@@ -28,5 +28,19 @@ describe("InsightPanel", () => {
     );
 
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it("falls back to the primary fabric tag when the selected fiber is messy", () => {
+    render(
+      <InsightPanel
+        selectedFiber="hemp-forward structured blend"
+        primaryFabricTag="Organic Hemp"
+        sustainabilityHighlight="Saves 2000 liters of water per garment"
+        designReasoning="The fiber keeps the silhouette grounded while supporting breathable layering."
+      />
+    );
+
+    expect(screen.getByText("The Earth-First Choice")).toBeInTheDocument();
+    expect(screen.getByText((_, node) => node?.textContent === "Material: Organic Hemp")).toBeInTheDocument();
   });
 });

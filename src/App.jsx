@@ -47,10 +47,6 @@ export default function App() {
         <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
           <Card className="border border-sage/15 bg-white/80 shadow-[0_28px_80px_-45px_rgba(124,154,126,0.6)] backdrop-blur md:sticky md:top-8 md:self-start">
             <CardBody className="gap-6 p-6 sm:p-8">
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sage/80">
-                ai sustainable fashion generator
-              </p>
-
               <GeneratorForm
                 selections={selections}
                 setSelections={setSelections}

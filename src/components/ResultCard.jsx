@@ -151,31 +151,70 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
                 ))}
               </div>
 
+              {console.log(
+                "InsightPanel props:",
+                result?.selected_fiber,
+                result?.primaryFabricTag
+              )}
               <InsightPanel
                 selectedFiber={result.selected_fiber}
+                primaryFabricTag={result.primaryFabricTag}
+                fallbackFiber={selections?.fiberPreference}
+                fabrics={result.fabrics}
                 sustainabilityHighlight={result.sustainability_highlight}
                 designReasoning={result.design_reasoning}
               />
             </div>
 
-            <div className="grid gap-8 md:grid-cols-2">
-              <section className="space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sage">
-                  Styling Notes
-                </p>
-                <p className="text-[0.875rem] leading-[1.7] text-stone-700">
-                  {result.stylingNotes}
-                </p>
-              </section>
+            <div>
+              <details style={{ borderTop: "1px solid #E8E0D5", marginTop: "24px" }}>
+                <summary
+                  style={{
+                    padding: "16px 0",
+                    cursor: "pointer",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    fontSize: "0.65rem",
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    color: "#7C9A7E",
+                    listStyle: "none",
+                    userSelect: "none",
+                  }}
+                >
+                  <span>Styling & Sustainability Details</span>
+                  <span style={{ fontSize: "0.8rem" }}>↓</span>
+                </summary>
+                <div style={{ paddingBottom: "16px" }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr",
+                      gap: "32px",
+                    }}
+                    className="md:[grid-template-columns:minmax(0,1fr)_minmax(0,1fr)]"
+                  >
+                    <section className="space-y-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sage">
+                        Styling Notes
+                      </p>
+                      <p className="min-w-0 text-[0.875rem] leading-[1.7] text-stone-700">
+                        {result.stylingNotes}
+                      </p>
+                    </section>
 
-              <section className="space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sage">
-                  Sustainability Insight
-                </p>
-                <p className="text-[0.875rem] leading-[1.7] text-stone-700">
-                  {result.sustainabilityInsight}
-                </p>
-              </section>
+                    <section className="space-y-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sage">
+                        Sustainability Insight
+                      </p>
+                      <p className="min-w-0 text-[0.875rem] leading-[1.7] text-stone-700">
+                        {result.sustainabilityInsight}
+                      </p>
+                    </section>
+                  </div>
+                </div>
+              </details>
             </div>
 
             <div className="space-y-3 text-center">

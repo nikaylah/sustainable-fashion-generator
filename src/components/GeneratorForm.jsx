@@ -106,6 +106,9 @@ export default function GeneratorForm({
   canGenerate,
 }) {
   const [showValidationMessage, setShowValidationMessage] = useState(false);
+  const shouldPulseGenerate = Boolean(
+    !isLoading && selections.fiberPreference && selections.styleVibe
+  );
 
   const hasAnySelection = useMemo(
     () =>
@@ -153,10 +156,52 @@ export default function GeneratorForm({
 
   return (
     <div className="space-y-2">
-      <div className="pb-3">
-        <h2 className="font-heading text-[2rem] italic text-[#3D3027]">
-          what do you want to feel?
-        </h2>
+      <div style={{ marginBottom: "40px", textAlign: "center" }}>
+        <p
+          style={{
+            fontSize: "0.65rem",
+            letterSpacing: "0.15em",
+            textTransform: "uppercase",
+            color: "#7C9A7E",
+            marginBottom: "12px",
+          }}
+        >
+          Step 1 — Choose your foundation
+        </p>
+        <h1
+          style={{
+            fontFamily: "Playfair Display, serif",
+            fontStyle: "italic",
+            fontSize: "clamp(2rem, 5vw, 3rem)",
+            color: "#3D3027",
+            lineHeight: 1.2,
+            marginBottom: "16px",
+          }}
+        >
+          Design with{" "}
+          <span
+            style={{
+              textDecoration: "underline",
+              textDecorationColor: "#7C9A7E",
+            }}
+          >
+            Intent
+          </span>
+          .
+        </h1>
+        <p
+          style={{
+            fontSize: "0.9rem",
+            color: "#8B7355",
+            maxWidth: "420px",
+            margin: "0 auto",
+            lineHeight: 1.7,
+          }}
+        >
+          Most fashion starts with a trend. Yours starts with a <strong>value</strong>.
+          Select your material and vibe to generate a garment designed for a sustainable
+          future.
+        </p>
       </div>
 
       <SingleSelectSection
@@ -205,7 +250,7 @@ export default function GeneratorForm({
         className={
           isLoading
             ? "generate-button-loading mt-6 w-full px-6 py-[18px] text-[1rem] font-semibold tracking-[0.05em] shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)]"
-            : "mt-6 w-full bg-sage px-6 py-[18px] text-[1rem] font-semibold tracking-[0.05em] text-white shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)] transition-transform hover:scale-[1.01]"
+            : `mt-6 w-full bg-sage px-6 py-[18px] text-[1rem] font-semibold tracking-[0.05em] text-white shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)] transition-transform hover:scale-[1.01] ${shouldPulseGenerate ? "generate-button-pulse" : ""}`
         }
         isLoading={isLoading}
         isDisabled={!canGenerate}

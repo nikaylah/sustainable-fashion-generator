@@ -84,6 +84,10 @@ body {
   pointer-events: none;
 }
 
+.generate-button-pulse {
+  animation: pulse-sage 2s ease-in-out infinite;
+}
+
 .button-spinner {
   height: 0.9rem;
   width: 0.9rem;
@@ -148,6 +152,17 @@ body {
 @keyframes button-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-sage {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(124, 154, 126, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px rgba(124, 154, 126, 0);
   }
 }
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FIBER_LIBRARY, calculateScore } from "../constants/fabrics";
+import { FIBER_LIBRARY, calculateScore, getFiberData } from "../constants/fabrics";
 
 const MetricBar = ({ label, value, color }) => {
   const [width, setWidth] = useState(0);
@@ -50,13 +50,42 @@ const MetricBar = ({ label, value, color }) => {
 
 export default function InsightPanel({
   selectedFiber,
+  primaryFabricTag,
+  fallbackFiber,
+  fabrics,
   sustainabilityHighlight,
   designReasoning,
 }) {
-  const fiberData = FIBER_LIBRARY[selectedFiber];
-  if (!fiberData) return null;
+  console.log("InsightPanel received:", selectedFiber);
 
-  const finalScore = calculateScore(fiberData);
+  const exactFiberData = selectedFiber ? FIBER_LIBRARY[selectedFiber] : null;
+  console.log("fiberData found:", exactFiberData);
+
+  const derivedFromFabrics = Array.isArray(fabrics)
+    ? fabrics
+        .map((fabric) => getFiberData(fabric?.name || ""))
+        .find(Boolean)
+    : null;
+
+  const fallbackFiberData =
+    (primaryFabricTag && FIBER_LIBRARY[primaryFabricTag]
+      ? { ...FIBER_LIBRARY[primaryFabricTag], name: primaryFabricTag }
+      : null) ||
+    (primaryFabricTag ? getFiberData(primaryFabricTag) : null) ||
+    (selectedFiber ? getFiberData(selectedFiber) : null) ||
+    (fallbackFiber && FIBER_LIBRARY[fallbackFiber]
+      ? { ...FIBER_LIBRARY[fallbackFiber], name: fallbackFiber }
+      : null) ||
+    (fallbackFiber ? getFiberData(fallbackFiber) : null) ||
+    derivedFromFabrics;
+
+  const matchedFiber = exactFiberData
+    ? { ...exactFiberData, name: selectedFiber }
+    : fallbackFiberData;
+
+  if (!matchedFiber) return null;
+
+  const finalScore = calculateScore(matchedFiber);
 
   return (
     <div
@@ -95,7 +124,7 @@ export default function InsightPanel({
               color: "#5C4A32",
             }}
           >
-            {fiberData.label}
+            {matchedFiber.label}
           </p>
         </div>
         <div style={{ textAlign: "right" }}>
@@ -113,9 +142,17 @@ export default function InsightPanel({
         </div>
       </div>
 
-      <MetricBar label="Carbon Offset" value={fiberData.carbon * 10} color="#7C9A7E" />
-      <MetricBar label="Water Preservation" value={fiberData.water * 10} color="#89B4C4" />
-      <MetricBar label="Ethical Sourcing" value={fiberData.ethical * 10} color="#C4A882" />
+      <MetricBar label="Carbon Offset" value={matchedFiber.carbon * 10} color="#7C9A7E" />
+      <MetricBar
+        label="Water Preservation"
+        value={matchedFiber.water * 10}
+        color="#89B4C4"
+      />
+      <MetricBar
+        label="Ethical Sourcing"
+        value={matchedFiber.ethical * 10}
+        color="#C4A882"
+      />
 
       {sustainabilityHighlight && (
         <div
@@ -179,7 +216,7 @@ export default function InsightPanel({
           color: "#8B7355",
         }}
       >
-        Material: {selectedFiber}
+        Material: {matchedFiber.name}
       </div>
     </div>
   );

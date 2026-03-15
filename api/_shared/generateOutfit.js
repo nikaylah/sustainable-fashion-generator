@@ -17,12 +17,14 @@ The Constraints:
 
 4. Design Logic: Explain how the chosen fiber interacts with the user's Style Vibe and Design Priorities for sustainability.
 
+CRITICAL: outfitDescription must be a MAXIMUM of 12 words. It should be a mood or feeling, not a description. Examples of good descriptions: "Structured softness for those who move with intention." / "Earth-toned layers that breathe with you." / "Romantic restraint in natural cream and sage." BAD example (too long): "A billowing organic hemp midi dress with hand-gathered bodice and flowing three-quarter sleeves." If your description exceeds 12 words it is wrong - shorten it.
+
 JSON Schema - return EXACTLY this structure:
 {
   "outfitName": "A short evocative name for the design concept",
   "selected_fiber": "Exact fiber name from the constrained list above",
   "silhouette_type": "Exact silhouette key from the constrained list above",
-  "outfitDescription": "One sentence of 20 words or fewer capturing the feeling of the outfit",
+  "outfitDescription": "One sentence of 12 words or fewer capturing the mood of the outfit",
   "fabrics": [
     {"name": "fabric name", "description": "why this fabric serves these inputs"}
   ],
@@ -40,7 +42,9 @@ JSON Schema - return EXACTLY this structure:
 ADDITIONAL RULES:
 - If Design Priorities include Modest Layering, silhouette_type must be abaya or layered-coat
 - Natural dye hex values: Yellows #E2B13C, Reds #B04E4E, Blues #2B4561, Earth #634F3A
-- Reference specific certifications (GOTS, OEKO-TEX, Bluesign) where relevant`;
+- Reference specific certifications (GOTS, OEKO-TEX, Bluesign) where relevant
+
+CRITICAL REQUIREMENT: Your JSON response MUST include "selected_fiber" set to exactly one of: "Organic Hemp", "Tencel Lyocell", "Recycled Polyester", "Deadstock Silk", "Conventional Cotton". This field must never be empty or null. It must always be present.`;
 
 function stripCodeFences(text) {
   return text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/, "");
@@ -53,11 +57,42 @@ function parseClaudeResponse(content) {
     throw new Error("the ai response came back empty.");
   }
 
+  let parsed;
   try {
-    return JSON.parse(stripCodeFences(textBlock.text));
+    parsed = JSON.parse(stripCodeFences(textBlock.text));
   } catch {
     throw new Error("the ai sent something i couldn't turn into outfit data.");
   }
+
+  // Add console log to see what Claude actually returned
+  console.log("Parsed response keys:", Object.keys(parsed));
+  console.log("selected_fiber:", parsed.selected_fiber);
+  console.log("primaryFabricTag:", parsed.primaryFabricTag);
+
+  // Fallback: if selected_fiber is missing or empty, derive it from fabrics array
+  if (!parsed.selected_fiber || parsed.selected_fiber === "") {
+    const fiberMap = {
+      hemp: "Organic Hemp",
+      tencel: "Tencel Lyocell",
+      lyocell: "Tencel Lyocell",
+      polyester: "Recycled Polyester",
+      silk: "Deadstock Silk",
+      cotton: "Conventional Cotton",
+    };
+    const firstFabricName = (parsed.fabrics?.[0]?.name || "").toLowerCase();
+    console.log("Deriving fiber from fabric name:", firstFabricName);
+    const matchedKey = Object.keys(fiberMap).find((k) => firstFabricName.includes(k));
+    parsed.selected_fiber = matchedKey ? fiberMap[matchedKey] : "Organic Hemp";
+    parsed.primaryFabricTag = parsed.selected_fiber;
+    console.log("Derived selected_fiber:", parsed.selected_fiber);
+  }
+
+  // Same fallback for primaryFabricTag
+  if (!parsed.primaryFabricTag || parsed.primaryFabricTag === "") {
+    parsed.primaryFabricTag = parsed.selected_fiber;
+  }
+
+  return parsed;
 }
 
 export function validateSelections(selections) {
@@ -119,10 +154,18 @@ export async function generateOutfitFromSelections(selections, apiKey) {
 - Design priorities: ${selections.designPriorities.join(", ")}
 - Visual detail to incorporate: ${selections.visualFlair || "asymmetrical hemline"}
 
+IMPORTANT: You must include "selected_fiber" in your JSON response. It must be EXACTLY one of these five strings - copy and paste exactly: "Organic Hemp", "Tencel Lyocell", "Recycled Polyester", "Deadstock Silk", "Conventional Cotton". Do not use any other value. This field is required and must not be null or undefined.
+
 Make sure someone could look at the output and immediately know which options were selected. The selections should create a completely unique result that would look nothing like a different combination of inputs.`,
       },
     ],
   });
 
-  return validateResult(parseClaudeResponse(response.content ?? []));
+  const parsedResponse = parseClaudeResponse(response.content ?? []);
+
+  console.log("Raw Claude response:", JSON.stringify(parsedResponse).slice(0, 500));
+  console.log("selected_fiber value:", parsedResponse.selected_fiber);
+  console.log("primaryFabricTag value:", parsedResponse.primaryFabricTag);
+
+  return validateResult(parsedResponse);
 }
