@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Card, CardBody, Chip } from "@heroui/react";
 import GeneratorForm from "./components/GeneratorForm";
+import LoadingOverlay from "./components/LoadingOverlay";
 import ResultCard from "./components/ResultCard";
 import { generateFashionOutfit } from "./api/claude";
 
@@ -43,6 +44,7 @@ export default function App() {
 
   return (
     <main className="min-h-screen bg-cream px-4 py-8 text-stone-800 sm:px-6 lg:px-8">
+      <LoadingOverlay isVisible={isLoading} />
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
         <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
           <Card className="main-card-surface bg-white/80 backdrop-blur md:sticky md:top-8 md:self-start">
@@ -92,21 +94,14 @@ export default function App() {
           <div className="flex min-h-[420px] items-stretch">
             <AnimatePresence mode="wait">
               {result ? (
-                <motion.div
-                  key={cardKey}
-                  className="w-full"
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -18 }}
-                  transition={{ duration: 0.35, ease: "easeOut" }}
-                >
+                <div key={cardKey} className="w-full">
                   <ResultCard
                     result={result}
                     selections={selections}
                     isLoading={isLoading}
                     onGenerateAnother={() => handleGenerate()}
                   />
-                </motion.div>
+                </div>
               ) : (
                 <motion.div
                   key="empty-state"

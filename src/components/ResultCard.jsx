@@ -97,9 +97,14 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
       {isLoading ? <LoadingCard /> : null}
 
       {result ? (
-        <Card className="main-card-surface overflow-hidden bg-cream">
-          <CardBody className="gap-10 p-8">
-            <div className="space-y-6 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
+        >
+          <Card className="main-card-surface overflow-hidden bg-cream">
+            <CardBody className="gap-10 p-8">
+              <div className="space-y-6 text-center">
               <div className="flex justify-center">
                 <div className="origin-center scale-[1.16]">
                   <FashionSilhouette
@@ -178,94 +183,95 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
               />
             </div>
 
-            <div>
-              <details style={{ borderTop: "1px solid #E8E0D5", marginTop: "24px" }}>
-                <summary
-                  style={{
-                    padding: "16px 0",
-                    cursor: "pointer",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    fontSize: "0.65rem",
-                    letterSpacing: "0.12em",
-                    textTransform: "uppercase",
-                    color: "#7C9A7E",
-                    listStyle: "none",
-                    userSelect: "none",
-                  }}
-                >
-                  <span>Styling & Sustainability Details</span>
-                  <span style={{ fontSize: "0.8rem" }}>↓</span>
-                </summary>
-                <div style={{ paddingBottom: "16px" }}>
-                  <div
+              <div>
+                <details style={{ borderTop: "1px solid #E8E0D5", marginTop: "24px" }}>
+                  <summary
                     style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr",
-                      gap: "32px",
+                      padding: "16px 0",
+                      cursor: "pointer",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      fontSize: "0.65rem",
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                      color: "#7C9A7E",
+                      listStyle: "none",
+                      userSelect: "none",
                     }}
-                    className="md:[grid-template-columns:minmax(0,1fr)_minmax(0,1fr)]"
                   >
-                    <section className="space-y-3">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sage">
-                        Styling Notes
-                      </p>
-                      <p className="min-w-0 text-[0.875rem] leading-[1.7] text-stone-700">
-                        {result.stylingNotes}
-                      </p>
-                    </section>
+                    <span>Styling & Sustainability Details</span>
+                    <span style={{ fontSize: "0.8rem" }}>↓</span>
+                  </summary>
+                  <div style={{ paddingBottom: "16px" }}>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr",
+                        gap: "32px",
+                      }}
+                      className="md:[grid-template-columns:minmax(0,1fr)_minmax(0,1fr)]"
+                    >
+                      <section className="space-y-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sage">
+                          Styling Notes
+                        </p>
+                        <p className="min-w-0 text-[0.875rem] leading-[1.7] text-stone-700">
+                          {result.stylingNotes}
+                        </p>
+                      </section>
 
-                    <section className="space-y-3">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sage">
-                        Sustainability Insight
-                      </p>
-                      <p className="min-w-0 text-[0.875rem] leading-[1.7] text-stone-700">
-                        {result.sustainabilityInsight}
-                      </p>
-                    </section>
+                      <section className="space-y-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sage">
+                          Sustainability Insight
+                        </p>
+                        <p className="min-w-0 text-[0.875rem] leading-[1.7] text-stone-700">
+                          {result.sustainabilityInsight}
+                        </p>
+                      </section>
+                    </div>
                   </div>
-                </div>
-              </details>
-            </div>
+                </details>
+              </div>
 
-            <div className="space-y-3 text-center">
-              <button
-                type="button"
-                className="text-sm text-[#8B7355] transition-colors duration-300 hover:text-sage"
-                onClick={() => setShowReasoning((current) => !current)}
+              <div className="space-y-3 text-center">
+                <button
+                  type="button"
+                  className="text-sm text-[#8B7355] transition-colors duration-300 hover:text-sage"
+                  onClick={() => setShowReasoning((current) => !current)}
+                >
+                  {showReasoning ? "hide the design logic ↑" : "see the design logic →"}
+                </button>
+
+                <AnimatePresence initial={false}>
+                  {showReasoning ? (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                      className="overflow-hidden"
+                    >
+                      <p className="mx-auto max-w-2xl text-[0.875rem] leading-[1.7] text-stone-600">
+                        {result.aiReasoning}
+                      </p>
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
+              </div>
+
+              <Button
+                radius="full"
+                variant="bordered"
+                className="mx-auto block min-h-11 w-full rounded-full border-2 border-sage bg-transparent px-6 py-2.5 text-sm font-semibold text-sage transition-colors duration-300 hover:bg-sage hover:text-white sm:w-fit"
+                isLoading={isLoading}
+                onPress={onGenerateAnother}
               >
-                {showReasoning ? "hide the design logic ↑" : "see the design logic →"}
-              </button>
-
-              <AnimatePresence initial={false}>
-                {showReasoning ? (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="overflow-hidden"
-                  >
-                    <p className="mx-auto max-w-2xl text-[0.875rem] leading-[1.7] text-stone-600">
-                      {result.aiReasoning}
-                    </p>
-                  </motion.div>
-                ) : null}
-              </AnimatePresence>
-            </div>
-
-            <Button
-              radius="full"
-              variant="bordered"
-              className="mx-auto block min-h-11 w-full rounded-full border-2 border-sage bg-transparent px-6 py-2.5 text-sm font-semibold text-sage transition-colors duration-300 hover:bg-sage hover:text-white sm:w-fit"
-              isLoading={isLoading}
-              onPress={onGenerateAnother}
-            >
-              Regenerate
-            </Button>
-          </CardBody>
-        </Card>
+                Regenerate
+              </Button>
+            </CardBody>
+          </Card>
+        </motion.div>
       ) : null}
     </div>
   );
