@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@heroui/react";
 
 const SINGLE_SELECT_FIELDS = [
@@ -37,10 +38,30 @@ export default function GeneratorForm({
   isLoading,
   canGenerate,
 }) {
+  const [showValidationMessage, setShowValidationMessage] = useState(false);
+
+  const hasAnySelection = useMemo(
+    () =>
+      Boolean(
+        selections.climate ||
+          selections.fiberPreference ||
+          selections.styleVibe ||
+          selections.colorPalette ||
+          selections.designPriorities.length
+      ),
+    [selections]
+  );
+
+  useEffect(() => {
+    if (hasAnySelection) {
+      setShowValidationMessage(false);
+    }
+  }, [hasAnySelection]);
+
   function updateSelection(key, value) {
     setSelections((current) => ({
       ...current,
-      [key]: value,
+      [key]: current[key] === value ? "" : value,
     }));
   }
 
@@ -57,6 +78,16 @@ export default function GeneratorForm({
     });
   }
 
+  function handleGeneratePress() {
+    if (!hasAnySelection) {
+      setShowValidationMessage(true);
+      return;
+    }
+
+    setShowValidationMessage(false);
+    onGenerate(selections);
+  }
+
   return (
     <div className="space-y-6">
       {SINGLE_SELECT_FIELDS.map((field) => (
@@ -65,7 +96,7 @@ export default function GeneratorForm({
             <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">
               {field.label}
             </h2>
-            <span className="text-sm text-stone-400">{selections[field.key]}</span>
+            <span className="text-sm text-stone-400">{selections[field.key] || ""}</span>
           </div>
           <div className="flex flex-wrap gap-3">
             {field.options.map((option) => {
@@ -78,8 +109,8 @@ export default function GeneratorForm({
                   variant={selected ? "solid" : "bordered"}
                   className={
                     selected
-                      ? "chip-selected"
-                      : "chip-unselected border-sand/60 bg-white text-stone-700"
+                      ? "chip-selected min-h-11"
+                      : "chip-unselected min-h-11 border-sand/60 bg-white text-stone-700"
                   }
                   onPress={() => updateSelection(field.key, option)}
                 >
@@ -111,8 +142,8 @@ export default function GeneratorForm({
                 variant={selected ? "solid" : "bordered"}
                 className={
                   selected
-                    ? "chip-selected"
-                    : "chip-unselected border-sand/60 bg-white text-stone-700"
+                    ? "chip-selected min-h-11"
+                    : "chip-unselected min-h-11 border-sand/60 bg-white text-stone-700"
                 }
                 onPress={() => togglePriority(option)}
               >
@@ -126,13 +157,30 @@ export default function GeneratorForm({
       <Button
         size="lg"
         radius="full"
-        className="w-full bg-sage text-base font-semibold text-white shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)] transition-transform hover:scale-[1.01]"
+        className={
+          isLoading
+            ? "generate-button-loading w-full text-base font-semibold shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)]"
+            : "w-full bg-sage text-base font-semibold text-white shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)] transition-transform hover:scale-[1.01]"
+        }
         isLoading={isLoading}
         isDisabled={!canGenerate}
-        onPress={() => onGenerate(selections)}
+        onPress={handleGeneratePress}
       >
-        {isLoading ? "Generating outfit..." : "Generate Outfit"}
+        {isLoading ? (
+          <span className="flex items-center justify-center gap-2">
+            <span className="button-spinner" />
+            <span>Generating...</span>
+          </span>
+        ) : (
+          "Generate Outfit"
+        )}
       </Button>
+
+      {showValidationMessage ? (
+        <p className="font-heading text-sm italic text-sage">
+          Select at least one preference to generate your outfit directions.
+        </p>
+      ) : null}
     </div>
   );
 }

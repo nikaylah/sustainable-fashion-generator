@@ -6,11 +6,11 @@ import ResultCard from "./components/ResultCard";
 import { generateFashionOutfit } from "./api/claude";
 
 const INITIAL_SELECTIONS = {
-  climate: "Warm",
-  fiberPreference: "Linen",
-  styleVibe: "Minimal",
-  colorPalette: "Neutrals",
-  designPriorities: ["Breathability", "Minimal Environmental Impact"],
+  climate: "",
+  fiberPreference: "",
+  styleVibe: "",
+  colorPalette: "",
+  designPriorities: [],
 };
 
 export default function App() {
@@ -20,7 +20,7 @@ export default function App() {
   const [error, setError] = useState("");
   const [cardKey, setCardKey] = useState(0);
 
-  const canGenerate = selections.designPriorities.length > 0 && !isLoading;
+  const canGenerate = !isLoading;
 
   async function handleGenerate(nextSelections = selections) {
     setSelections(nextSelections);
@@ -54,7 +54,7 @@ export default function App() {
     <main className="min-h-screen bg-cream px-4 py-8 text-stone-800 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
         <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
-          <Card className="border border-sage/15 bg-white/80 shadow-[0_28px_80px_-45px_rgba(124,154,126,0.6)] backdrop-blur md:sticky md:top-8">
+          <Card className="border border-sage/15 bg-white/80 shadow-[0_28px_80px_-45px_rgba(124,154,126,0.6)] backdrop-blur md:sticky md:top-8 md:self-start">
             <CardBody className="gap-6 p-6 sm:p-8">
               <div className="space-y-3">
                 <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sage/80">
