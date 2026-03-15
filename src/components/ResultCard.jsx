@@ -53,7 +53,7 @@ function LoadingCard() {
   }, []);
 
   return (
-    <Card className="border border-sand/50 bg-white shadow-[0_30px_80px_-50px_rgba(80,70,55,0.45)]">
+    <Card className="main-card-surface bg-white">
       <CardBody className="gap-6 p-8">
         <div className="skeleton-block mx-auto h-[280px] w-[180px] rounded-[28px] border border-sand/60 bg-cream" />
         <div className="space-y-3 text-center">
@@ -97,7 +97,7 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
       {isLoading ? <LoadingCard /> : null}
 
       {result ? (
-        <Card className="overflow-hidden border border-sand/50 bg-cream shadow-[0_30px_80px_-50px_rgba(80,70,55,0.45)]">
+        <Card className="main-card-surface overflow-hidden bg-cream">
           <CardBody className="gap-10 p-8">
             <div className="space-y-6 text-center">
               <div className="flex justify-center">
@@ -151,11 +151,23 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
                 ))}
               </div>
 
-              {console.log(
-                "InsightPanel props:",
-                result?.selected_fiber,
-                result?.primaryFabricTag
-              )}
+              <div style={{ display: "flex", justifyContent: "center", margin: "8px 0" }}>
+                <svg
+                  width="120"
+                  height="12"
+                  viewBox="0 0 120 12"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M2 10C10 10 14 2 22 2C30 2 34 10 42 10C50 10 54 2 62 2C70 2 74 10 82 10C90 10 94 2 102 2C110 2 114 10 118 10"
+                    stroke="#C4B5A0"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+
               <InsightPanel
                 selectedFiber={result.selected_fiber}
                 primaryFabricTag={result.primaryFabricTag}

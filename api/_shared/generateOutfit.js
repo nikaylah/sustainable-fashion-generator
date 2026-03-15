@@ -1,6 +1,23 @@
 import Anthropic from "@anthropic-ai/sdk";
 
 const MODEL = "claude-sonnet-4-20250514";
+const ENVIRONMENT_THEMES = {
+  Minimal: "a stark brutalist concrete gallery with dramatic shadows and clean architectural lines",
+  Earthy: "a sun-drenched desert canyon with towering sandstone walls and soft golden-hour light",
+  Romantic:
+    "a misty overgrown botanical garden at dawn with soft-focus greenery and ethereal light",
+  Contemporary: "a sleek high-tech design studio with glass surfaces and cool-toned ambient lighting",
+};
+
+const FIBER_NARRATIVES = {
+  "Organic Hemp": "a fiber that sequesters carbon and requires 50% less water than cotton",
+  "Tencel Lyocell":
+    "a bio-engineered fiber from eucalyptus wood pulp processed in a closed-loop system",
+  "Recycled Polyester": "a circular fiber diverted from ocean plastic and landfill waste",
+  "Deadstock Silk":
+    "a rescued luxury fiber salvaged from fashion house surplus that would otherwise be destroyed",
+  "Conventional Cotton": "the industry baseline - high water use and pesticide dependency",
+};
 
 const SYSTEM_PROMPT =
   `Act as a Sustainable Fashion Creative Technologist.
@@ -64,11 +81,6 @@ function parseClaudeResponse(content) {
     throw new Error("the ai sent something i couldn't turn into outfit data.");
   }
 
-  // Add console log to see what Claude actually returned
-  console.log("Parsed response keys:", Object.keys(parsed));
-  console.log("selected_fiber:", parsed.selected_fiber);
-  console.log("primaryFabricTag:", parsed.primaryFabricTag);
-
   // Fallback: if selected_fiber is missing or empty, derive it from fabrics array
   if (!parsed.selected_fiber || parsed.selected_fiber === "") {
     const fiberMap = {
@@ -80,11 +92,9 @@ function parseClaudeResponse(content) {
       cotton: "Conventional Cotton",
     };
     const firstFabricName = (parsed.fabrics?.[0]?.name || "").toLowerCase();
-    console.log("Deriving fiber from fabric name:", firstFabricName);
     const matchedKey = Object.keys(fiberMap).find((k) => firstFabricName.includes(k));
     parsed.selected_fiber = matchedKey ? fiberMap[matchedKey] : "Organic Hemp";
     parsed.primaryFabricTag = parsed.selected_fiber;
-    console.log("Derived selected_fiber:", parsed.selected_fiber);
   }
 
   // Same fallback for primaryFabricTag
@@ -140,6 +150,19 @@ export async function generateOutfitFromSelections(selections, apiKey) {
     throw new Error("missing anthropic api key");
   }
 
+  const styleVibe = selections.styleVibe;
+  const fiber = selections.fiberPreference;
+  const environmentTheme = ENVIRONMENT_THEMES[styleVibe] || "a minimalist neutral studio";
+  const fiberNarrative = FIBER_NARRATIVES[fiber] || fiber;
+
+  const environmentalContext = `
+CREATIVE DIRECTION: Imagine this garment photographed in ${environmentTheme}.
+The hero fiber is ${fiberNarrative}.
+Let this environmental world and fiber story inform every creative decision -
+the silhouette, the texture descriptions, the styling notes, and the designer reasoning
+should all feel like they belong in this specific world.
+`;
+
   const anthropic = new Anthropic({ apiKey });
   const response = await anthropic.messages.create({
     model: MODEL,
@@ -148,7 +171,8 @@ export async function generateOutfitFromSelections(selections, apiKey) {
     messages: [
       {
         role: "user",
-        content: `Generate one outfit direction for someone with these SPECIFIC requirements:
+        content: `${environmentalContext}
+Generate one outfit direction for someone with these SPECIFIC requirements:
 - Hero fiber: ${selections.fiberPreference} - must be the dominant material
 - Aesthetic vibe: ${selections.styleVibe} - must be unmistakably present
 - Design priorities: ${selections.designPriorities.join(", ")}
@@ -162,10 +186,6 @@ Make sure someone could look at the output and immediately know which options we
   });
 
   const parsedResponse = parseClaudeResponse(response.content ?? []);
-
-  console.log("Raw Claude response:", JSON.stringify(parsedResponse).slice(0, 500));
-  console.log("selected_fiber value:", parsedResponse.selected_fiber);
-  console.log("primaryFabricTag value:", parsedResponse.primaryFabricTag);
 
   return validateResult(parsedResponse);
 }

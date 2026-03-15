@@ -13,7 +13,7 @@ describe("InsightPanel", () => {
 
     expect(screen.getByText("Sustainability Score")).toBeInTheDocument();
     expect(screen.getByText("The Earth-First Choice")).toBeInTheDocument();
-    expect(screen.getByText(/94/)).toBeInTheDocument();
+    expect(screen.getAllByText(/94/).length).toBeGreaterThan(0);
     expect(screen.getByText(/Saves 2000 liters of water per garment/)).toBeInTheDocument();
     expect(screen.getByText((_, node) => node?.textContent === "Material: Organic Hemp")).toBeInTheDocument();
   });

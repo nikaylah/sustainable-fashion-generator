@@ -45,7 +45,7 @@ export default function App() {
     <main className="min-h-screen bg-cream px-4 py-8 text-stone-800 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
         <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
-          <Card className="border border-sage/15 bg-white/80 shadow-[0_28px_80px_-45px_rgba(124,154,126,0.6)] backdrop-blur md:sticky md:top-8 md:self-start">
+          <Card className="main-card-surface bg-white/80 backdrop-blur md:sticky md:top-8 md:self-start">
             <CardBody className="gap-6 p-6 sm:p-8">
               <GeneratorForm
                 selections={selections}
@@ -56,7 +56,7 @@ export default function App() {
               />
 
               {result ? (
-                <div className="rounded-[28px] border-l-[3px] border-sage bg-[#F5F0E8] px-5 py-4 shadow-[0_18px_40px_-30px_rgba(80,70,55,0.45)]">
+                <div className="inner-card-surface border-l-[3px] border-sage bg-[#F5F0E8] px-5 py-4">
                   <p className="font-heading text-sm italic leading-6 text-stone-700">
                     A design experiment exploring what clothing concepts look like when
                     sustainability values shape the creative process — not trends.
@@ -116,7 +116,7 @@ export default function App() {
                   exit={{ opacity: 0, y: -18 }}
                   transition={{ duration: 0.35, ease: "easeOut" }}
                 >
-                  <Card className="flex h-full min-h-[420px] w-full items-center justify-center border border-sand/40 bg-white/70 shadow-[0_24px_70px_-48px_rgba(80,70,55,0.5)]">
+                  <Card className="main-card-surface flex h-full min-h-[420px] w-full items-center justify-center bg-white/70">
                     <CardBody className="items-center justify-center gap-4 p-8 text-center">
                       <div className="flex h-20 w-20 items-center justify-center rounded-full bg-sage/10 text-3xl text-sage">
                         ✦

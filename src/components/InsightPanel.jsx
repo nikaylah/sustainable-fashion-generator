@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { FIBER_LIBRARY, calculateScore, getFiberData } from "../constants/fabrics";
+import linenImage from "../assets/swatches/linen.jpg";
+import cottonImage from "../assets/swatches/cotton.jpg";
+import cottonFabricImage from "../assets/swatches/cottonfabric.jpg";
+import merinoImage from "../assets/swatches/Merino_Wool.jpg";
+import hempImage from "../assets/swatches/hemp.jpg";
+import silkImage from "../assets/swatches/MulberrySilk.jpg";
+import alpacaImage from "../assets/swatches/alpacawool.jpg";
+import woolImage from "../assets/swatches/wool.jpg";
 
 const MetricBar = ({ label, value, color }) => {
   const [width, setWidth] = useState(0);
@@ -67,6 +75,22 @@ function getFallbackHighlight(matchedFiber) {
   return fallbackHighlights[matchedFiber.name] || matchedFiber.description || "";
 }
 
+function getFabricImage(name = "") {
+  const label = name.toLowerCase();
+
+  if (label.includes("linen")) return linenImage;
+  if (label.includes("cotton")) return cottonImage;
+  if (label.includes("wool") || label.includes("merino")) return merinoImage;
+  if (label.includes("hemp")) return hempImage;
+  if (label.includes("silk")) return silkImage;
+  if (label.includes("alpaca")) return alpacaImage;
+  if (label.includes("bamboo") || label.includes("tencel") || label.includes("lyocell")) {
+    return cottonFabricImage;
+  }
+
+  return woolImage;
+}
+
 export default function InsightPanel({
   selectedFiber,
   primaryFabricTag,
@@ -75,10 +99,7 @@ export default function InsightPanel({
   sustainabilityHighlight,
   designReasoning,
 }) {
-  console.log("InsightPanel received:", selectedFiber);
-
   const exactFiberData = selectedFiber ? FIBER_LIBRARY[selectedFiber] : null;
-  console.log("fiberData found:", exactFiberData);
 
   const derivedFromFabrics = Array.isArray(fabrics)
     ? fabrics
@@ -108,14 +129,113 @@ export default function InsightPanel({
   const resolvedHighlight = sustainabilityHighlight || getFallbackHighlight(matchedFiber);
 
   return (
-    <div
-      style={{
-        backgroundColor: "#F5F0E8",
-        borderRadius: "12px",
-        padding: "24px",
-        marginTop: "24px",
-      }}
-    >
+    <>
+      <div
+        className="grid gap-3 md:hidden"
+        style={{
+          gridTemplateColumns: "1fr 1fr",
+          marginBottom: "16px",
+          marginTop: "24px",
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: "#fcfaf7",
+            borderRadius: "1.5rem",
+            padding: "20px",
+            border: "1px solid rgba(15,30,63,0.06)",
+            boxShadow: "0 8px 30px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.02)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            aspectRatio: "1",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "0.6rem",
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              opacity: 0.5,
+              marginBottom: "8px",
+            }}
+          >
+            Impact
+          </span>
+          <span
+            style={{
+              fontFamily: "Playfair Display, serif",
+              fontSize: "2.5rem",
+              fontWeight: "bold",
+              color: "#3D3027",
+              lineHeight: 1,
+            }}
+          >
+            {finalScore}
+          </span>
+          <span style={{ fontSize: "0.6rem", opacity: 0.4, marginTop: "4px" }}>out of 100</span>
+        </div>
+
+        <div
+          style={{
+            backgroundColor: "#fcfaf7",
+            borderRadius: "1.5rem",
+            padding: "20px",
+            border: "1px solid rgba(15,30,63,0.06)",
+            boxShadow: "0 8px 30px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.02)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            aspectRatio: "1",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "0.6rem",
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              opacity: 0.5,
+              marginBottom: "8px",
+            }}
+          >
+            Foundation
+          </span>
+          <img
+            src={getFabricImage(matchedFiber.name)}
+            alt={matchedFiber.name}
+            style={{
+              width: "48px",
+              height: "48px",
+              borderRadius: "50%",
+              objectFit: "cover",
+              marginBottom: "8px",
+            }}
+          />
+          <span
+            style={{
+              fontSize: "0.65rem",
+              fontWeight: "bold",
+              textTransform: "uppercase",
+              textAlign: "center",
+              lineHeight: 1.3,
+              color: "#5C4A32",
+            }}
+          >
+            {matchedFiber.name}
+          </span>
+        </div>
+      </div>
+
+      <div
+        className="inner-card-surface"
+        style={{
+          backgroundColor: "#F5F0E8",
+          padding: "24px",
+          marginTop: "24px",
+        }}
+      >
       <div
         style={{
           display: "flex",
@@ -238,6 +358,7 @@ export default function InsightPanel({
       >
         Material: {matchedFiber.name}
       </div>
-    </div>
+      </div>
+    </>
   );
 }

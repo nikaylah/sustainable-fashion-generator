@@ -51,14 +51,34 @@ function SingleSelectSection({ field, selections, updateSelection }) {
                 type="button"
                 className={
                   selected
-                    ? "rounded-[12px] border-2 border-sage bg-[#F0F5F0] p-4 text-left shadow-[0_16px_36px_-30px_rgba(124,154,126,0.7)] transition-colors"
-                    : "rounded-[12px] border border-stone-200 bg-cream p-4 text-left shadow-[0_14px_30px_-28px_rgba(80,70,55,0.45)] transition-colors hover:border-sand/80"
+                    ? "fiber-card-button inner-card-surface border-2 border-sage bg-[#E4F0E4] p-4 text-left ring-2 ring-sage/30 ring-offset-2 ring-offset-[#f8f5ec]"
+                    : "fiber-card-button inner-card-surface border border-stone-200 bg-cream p-4 text-left hover:border-sand/80"
                 }
                 onClick={() => updateSelection(field.key, option)}
               >
-                <p className="text-[0.95rem] font-semibold text-stone-900">{option}</p>
-                <p className="mt-1 text-sm italic text-sage">{fiber.label}</p>
-                <p className="mt-3 text-[0.72rem] text-stone-500">{IMPACT_HINTS[option]}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className={selected ? "text-[0.95rem] font-semibold text-sage" : "text-[0.95rem] font-semibold text-stone-900"}>
+                      {option}
+                    </p>
+                    <p className={selected ? "mt-1 text-sm italic text-sage/90" : "mt-1 text-sm italic text-sage"}>
+                      {fiber.label}
+                    </p>
+                  </div>
+                  <span
+                    className={
+                      selected
+                        ? "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sage text-sm text-white shadow-[0_8px_18px_rgba(124,154,126,0.28)]"
+                        : "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-white text-transparent"
+                    }
+                    aria-hidden="true"
+                  >
+                    ✓
+                  </span>
+                </div>
+                <p className={selected ? "mt-3 text-[0.72rem] font-medium text-stone-600" : "mt-3 text-[0.72rem] text-stone-500"}>
+                  {IMPACT_HINTS[option]}
+                </p>
               </button>
             );
           })}
@@ -159,8 +179,9 @@ export default function GeneratorForm({
       <div style={{ marginBottom: "40px", textAlign: "center" }}>
         <p
           style={{
-            fontSize: "0.65rem",
-            letterSpacing: "0.15em",
+            fontFamily: "'Caveat', cursive",
+            fontSize: "1.15rem",
+            letterSpacing: "0.08em",
             textTransform: "uppercase",
             color: "#7C9A7E",
             marginBottom: "12px",
@@ -170,9 +191,8 @@ export default function GeneratorForm({
         </p>
         <h1
           style={{
-            fontFamily: "Playfair Display, serif",
-            fontStyle: "italic",
-            fontSize: "clamp(2rem, 5vw, 3rem)",
+            fontFamily: "'Caveat', cursive",
+            fontSize: "clamp(2.5rem, 6vw, 3.5rem)",
             color: "#3D3027",
             lineHeight: 1.2,
             marginBottom: "16px",
@@ -249,8 +269,8 @@ export default function GeneratorForm({
         radius="full"
         className={
           isLoading
-            ? "generate-button-loading mt-6 w-full px-6 py-[18px] text-[1rem] font-semibold tracking-[0.05em] shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)]"
-            : `mt-6 w-full bg-sage px-6 py-[18px] text-[1rem] font-semibold tracking-[0.05em] text-white shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)] transition-transform hover:scale-[1.01] ${shouldPulseGenerate ? "generate-button-pulse" : ""}`
+            ? "generate-button-loading generate-button-whimsy mt-6 w-full px-6 py-[18px] text-[1rem] font-semibold tracking-[0.05em] shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)]"
+            : `generate-button-whimsy mt-6 w-full bg-sage px-6 py-[18px] text-[1rem] font-semibold tracking-[0.05em] text-white shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)] ${shouldPulseGenerate ? "generate-button-pulse" : ""}`
         }
         isLoading={isLoading}
         isDisabled={!canGenerate}

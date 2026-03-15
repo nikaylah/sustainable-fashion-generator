@@ -19,7 +19,10 @@
 body {
   margin: 0;
   min-width: 320px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  background-color: #f8f5ec;
+  background-image:
+    url("https://www.transparenttextures.com/patterns/cream-paper.png"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
 }
 
 * {
@@ -28,6 +31,22 @@ body {
 
 .font-heading {
   font-family: "Playfair Display", serif;
+}
+
+.main-card-surface {
+  border: 1px solid rgba(15, 30, 63, 0.06);
+  border-radius: 2rem;
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.04),
+    0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.inner-card-surface {
+  border: 1px solid rgba(15, 30, 63, 0.06);
+  border-radius: 1.5rem;
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.04),
+    0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
 .chip-selected {
@@ -82,10 +101,21 @@ body {
   color: rgb(255 255 255 / 60%);
   cursor: not-allowed;
   pointer-events: none;
+  transform: rotate(-1deg);
+  transition: transform 0.2s ease;
 }
 
 .generate-button-pulse {
   animation: pulse-sage 2s ease-in-out infinite;
+}
+
+.generate-button-whimsy {
+  transform: rotate(-1deg);
+  transition: transform 0.2s ease;
+}
+
+.generate-button-whimsy:hover {
+  transform: rotate(0deg);
 }
 
 .button-spinner {
@@ -99,6 +129,19 @@ body {
 
 .skeleton-block {
   animation: skeleton-pulse 1.8s ease-in-out infinite;
+}
+
+.fiber-card-button {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.fiber-card-button:hover {
+  transform: translateY(-2px) rotate(0.5deg);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
 }
 
 .fashion-silhouette-wrap {
