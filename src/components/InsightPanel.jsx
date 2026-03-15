@@ -48,6 +48,25 @@ const MetricBar = ({ label, value, color }) => {
   );
 };
 
+function getFallbackHighlight(matchedFiber) {
+  if (!matchedFiber?.name) return "";
+
+  const fallbackHighlights = {
+    "Organic Hemp":
+      "Saves 2400 liters of water per garment compared to conventional cotton equivalent.",
+    "Tencel Lyocell":
+      "Made in a closed-loop process that reuses 99% of the solvent system.",
+    "Recycled Polyester":
+      "Gives existing plastic waste a second life instead of demanding virgin petroleum.",
+    "Deadstock Silk":
+      "Uses existing luxury surplus so no new silk yardage needs to be produced.",
+    "Conventional Cotton":
+      "Acts as a baseline material, making lower-impact alternatives easier to compare.",
+  };
+
+  return fallbackHighlights[matchedFiber.name] || matchedFiber.description || "";
+}
+
 export default function InsightPanel({
   selectedFiber,
   primaryFabricTag,
@@ -86,6 +105,7 @@ export default function InsightPanel({
   if (!matchedFiber) return null;
 
   const finalScore = calculateScore(matchedFiber);
+  const resolvedHighlight = sustainabilityHighlight || getFallbackHighlight(matchedFiber);
 
   return (
     <div
@@ -154,7 +174,7 @@ export default function InsightPanel({
         color="#C4A882"
       />
 
-      {sustainabilityHighlight && (
+      {resolvedHighlight && (
         <div
           style={{
             borderLeft: "3px solid #7C9A7E",
@@ -167,7 +187,7 @@ export default function InsightPanel({
             color: "#5C4A32",
           }}
         >
-          🌿 {sustainabilityHighlight}
+          🌿 {resolvedHighlight}
         </div>
       )}
 

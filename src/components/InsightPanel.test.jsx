@@ -43,4 +43,18 @@ describe("InsightPanel", () => {
     expect(screen.getByText("The Earth-First Choice")).toBeInTheDocument();
     expect(screen.getByText((_, node) => node?.textContent === "Material: Organic Hemp")).toBeInTheDocument();
   });
+
+  it("shows a fiber-based fallback sustainability highlight when the ai leaves it blank", () => {
+    render(
+      <InsightPanel
+        selectedFiber="Organic Hemp"
+        sustainabilityHighlight=""
+        designReasoning="The fiber keeps the silhouette grounded while supporting breathable layering."
+      />
+    );
+
+    expect(
+      screen.getByText(/Saves 2400 liters of water per garment compared to conventional cotton equivalent/i)
+    ).toBeInTheDocument();
+  });
 });
