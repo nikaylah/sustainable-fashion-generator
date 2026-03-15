@@ -6,15 +6,9 @@ import ResultCard from "./components/ResultCard";
 import { generateFashionOutfit } from "./api/claude";
 
 const INITIAL_SELECTIONS = {
-  climate: "",
   fiberPreference: "",
   styleVibe: "",
-  colorPalette: "",
   designPriorities: [],
-  opacityPreference: "",
-  activityLevel: "",
-  careCapacity: "",
-  specificEthics: [],
 };
 
 export default function App() {
@@ -53,19 +47,9 @@ export default function App() {
         <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
           <Card className="border border-sage/15 bg-white/80 shadow-[0_28px_80px_-45px_rgba(124,154,126,0.6)] backdrop-blur md:sticky md:top-8 md:self-start">
             <CardBody className="gap-6 p-6 sm:p-8">
-              <div className="space-y-3">
-                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sage/80">
-                  ai sustainable fashion generator
-                </p>
-                <h1 className="font-heading text-4xl leading-tight text-stone-900 sm:text-5xl">
-                  build a thoughtful outfit around natural fibers and real values
-                </h1>
-                <p className="max-w-2xl text-base leading-7 text-stone-600">
-                  pick the weather, fiber, mood, and priorities you care about. the generator
-                  turns those choices into an outfit concept with fabric logic and sustainability
-                  reasoning.
-                </p>
-              </div>
+              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sage/80">
+                ai sustainable fashion generator
+              </p>
 
               <GeneratorForm
                 selections={selections}
@@ -82,10 +66,9 @@ export default function App() {
                     sustainability values shape the creative process — not trends.
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {[
-                      ...selections.designPriorities,
-                      ...selections.specificEthics,
-                    ].map((priority) => (
+                    {[selections.fiberPreference, selections.styleVibe, ...selections.designPriorities]
+                      .filter(Boolean)
+                      .map((priority) => (
                       <Chip
                         key={priority}
                         radius="full"

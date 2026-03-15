@@ -1,82 +1,36 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@heroui/react";
 
-const PRIMARY_SINGLE_SELECT_FIELDS = [
-  {
-    key: "climate",
-    label: "Climate",
-    icon: "🌤",
-    tintClass: "bg-[#EEF4F8]",
-    options: ["Warm", "Mild", "Cold"],
-  },
-  {
-    key: "fiberPreference",
-    label: "Fiber Preference",
-    icon: "🌿",
-    tintClass: "bg-[#EEF2EE]",
-    options: [
-      "Linen",
-      "Organic Cotton",
-      "Bamboo",
-      "Wool (Merino)",
-      "Hemp",
-      "Tencel/Lyocell",
-      "Alpaca",
-      "Silk",
-    ],
-  },
-  {
-    key: "styleVibe",
-    label: "Style Vibe",
-    icon: "✨",
-    tintClass: "bg-[#F8F0F0]",
-    options: ["Minimal", "Earthy", "Romantic", "Contemporary"],
-  },
-  {
-    key: "colorPalette",
-    label: "Color Palette",
-    icon: "🎨",
-    tintClass: "bg-[#F3F0F8]",
-    options: ["Neutrals", "Desert Tones", "Forest Tones", "Soft Pastels"],
-  },
-];
+const FIBER_FIELD = {
+  key: "fiberPreference",
+  label: "Fiber Preference",
+  icon: "🌿",
+  tintClass: "bg-[#EEF2EE]",
+  options: [
+    "Linen",
+    "Organic Cotton",
+    "Bamboo",
+    "Wool (Merino)",
+    "Hemp",
+    "Tencel/Lyocell",
+    "Alpaca",
+    "Silk",
+  ],
+};
 
-const SECONDARY_SINGLE_SELECT_FIELDS = [
-  {
-    key: "opacityPreference",
-    label: "Opacity Preference",
-    icon: "👁",
-    tintClass: "bg-[#F0F0F8]",
-    options: ["Sheer/Layering", "Semi-Opaque", "Fully Opaque"],
-  },
-  {
-    key: "activityLevel",
-    label: "Activity Level",
-    icon: "🚶",
-    tintClass: "bg-[#F0F5F0]",
-    options: ["Office/Static", "Daily/Walking", "Active/Commuting"],
-  },
-  {
-    key: "careCapacity",
-    label: "Care Capacity",
-    icon: "🫧",
-    tintClass: "bg-[#F5F0F5]",
-    options: ["Machine Wash", "Hand Wash", "Dry Clean Only"],
-  },
-];
+const STYLE_FIELD = {
+  key: "styleVibe",
+  label: "Style Vibe",
+  icon: "✨",
+  tintClass: "bg-[#F8F0F0]",
+  options: ["Minimal", "Earthy", "Romantic", "Contemporary"],
+};
 
 const PRIORITY_OPTIONS = [
   "Breathability",
   "Durability",
   "Minimal Environmental Impact",
   "Modest Layering",
-];
-
-const ETHICS_OPTIONS = [
-  "Vegan Only",
-  "Compostable/Biodegradable",
-  "Local Sourcing",
-  "Fair Trade",
 ];
 
 const FIBER_TOOLTIPS = {
@@ -90,6 +44,41 @@ const FIBER_TOOLTIPS = {
   Silk: "Breathability 7/10 · Best for mild climates · Protein fiber, takes natural dyes well",
 };
 
+function SingleSelectSection({ field, selections, updateSelection }) {
+  return (
+    <section className="space-y-5 border-b border-[#EDE8E0] py-8">
+      <div className="flex items-center gap-2 text-[1rem] font-medium tracking-[0.08em] text-[#5C4A32]">
+        <span aria-hidden="true">{field.icon}</span>
+        <span>{field.label}</span>
+      </div>
+      <div className="flex flex-wrap gap-4">
+        {field.options.map((option) => {
+          const selected = selections[field.key] === option;
+          const tooltip = field.key === "fiberPreference" ? FIBER_TOOLTIPS[option] : null;
+
+          return (
+            <span key={option} className="fiber-chip-wrap">
+              <Button
+                radius="full"
+                variant={selected ? "solid" : "bordered"}
+                className={
+                  selected
+                    ? "chip-selected min-h-11 px-6 py-3 text-[0.9rem]"
+                    : `chip-unselected min-h-11 border-sand/60 ${field.tintClass} px-6 py-3 text-[0.9rem] text-stone-700`
+                }
+                onPress={() => updateSelection(field.key, option)}
+              >
+                {option}
+              </Button>
+              {tooltip ? <span className="fiber-chip-tooltip">{tooltip}</span> : null}
+            </span>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export default function GeneratorForm({
   selections,
   setSelections,
@@ -102,15 +91,7 @@ export default function GeneratorForm({
   const hasAnySelection = useMemo(
     () =>
       Boolean(
-        selections.climate ||
-          selections.fiberPreference ||
-          selections.styleVibe ||
-          selections.colorPalette ||
-          selections.designPriorities.length ||
-          selections.opacityPreference ||
-          selections.activityLevel ||
-          selections.careCapacity ||
-          selections.specificEthics.length
+        selections.fiberPreference || selections.styleVibe || selections.designPriorities.length
       ),
     [selections]
   );
@@ -141,19 +122,6 @@ export default function GeneratorForm({
     });
   }
 
-  function toggleEthic(ethic) {
-    setSelections((current) => {
-      const exists = current.specificEthics.includes(ethic);
-
-      return {
-        ...current,
-        specificEthics: exists
-          ? current.specificEthics.filter((item) => item !== ethic)
-          : [...current.specificEthics, ethic],
-      };
-    });
-  }
-
   function handleGeneratePress() {
     if (!hasAnySelection) {
       setShowValidationMessage(true);
@@ -165,58 +133,31 @@ export default function GeneratorForm({
   }
 
   return (
-    <div className="space-y-6">
-      {PRIMARY_SINGLE_SELECT_FIELDS.map((field) => (
-        <div key={field.key} className="space-y-3 border-b border-[#EDE8E0] pb-4">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="flex items-center gap-2 text-[0.8rem] font-semibold tracking-[0.05em] text-[#8B7355]">
-              <span aria-hidden="true">{field.icon}</span>
-              <span>{field.label}</span>
-            </h2>
-            <span className="text-sm text-stone-400">{selections[field.key] || ""}</span>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            {field.options.map((option) => {
-              const selected = selections[field.key] === option;
-              const tooltip = field.key === "fiberPreference" ? FIBER_TOOLTIPS[option] : null;
-              const button = (
-                <Button
-                  key={option}
-                  radius="full"
-                  variant={selected ? "solid" : "bordered"}
-                  className={
-                    selected
-                      ? "chip-selected min-h-11"
-                      : `chip-unselected min-h-11 border-sand/60 ${field.tintClass} text-stone-700`
-                  }
-                  onPress={() => updateSelection(field.key, option)}
-                >
-                  {option}
-                </Button>
-              );
+    <div className="space-y-2">
+      <div className="pb-3">
+        <h2 className="font-heading text-[2rem] italic text-[#3D3027]">
+          what do you want to feel?
+        </h2>
+      </div>
 
-              return (
-                <span key={option} className="fiber-chip-wrap">
-                  {button}
-                  {tooltip ? <span className="fiber-chip-tooltip">{tooltip}</span> : null}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      ))}
+      <SingleSelectSection
+        field={FIBER_FIELD}
+        selections={selections}
+        updateSelection={updateSelection}
+      />
 
-      <div className="space-y-3 border-b border-[#EDE8E0] pb-4">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="flex items-center gap-2 text-[0.8rem] font-semibold tracking-[0.05em] text-[#8B7355]">
-            <span aria-hidden="true">🌱</span>
-            <span>Design Priorities</span>
-          </h2>
-          <span className="text-sm text-stone-400">
-            {selections.designPriorities.length} selected
-          </span>
+      <SingleSelectSection
+        field={STYLE_FIELD}
+        selections={selections}
+        updateSelection={updateSelection}
+      />
+
+      <section className="space-y-5 border-b border-[#EDE8E0] py-8">
+        <div className="flex items-center gap-2 text-[1rem] font-medium tracking-[0.08em] text-[#5C4A32]">
+          <span aria-hidden="true">🌱</span>
+          <span>Design Priorities</span>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-4">
           {PRIORITY_OPTIONS.map((option) => {
             const selected = selections.designPriorities.includes(option);
 
@@ -227,8 +168,8 @@ export default function GeneratorForm({
                 variant={selected ? "solid" : "bordered"}
                 className={
                   selected
-                    ? "chip-selected min-h-11"
-                    : "chip-unselected min-h-11 border-sand/60 bg-[#EDF2ED] text-stone-700"
+                    ? "chip-selected min-h-11 px-6 py-3 text-[0.9rem]"
+                    : "chip-unselected min-h-11 border-sand/60 bg-[#EDF2ED] px-6 py-3 text-[0.9rem] text-stone-700"
                 }
                 onPress={() => togglePriority(option)}
               >
@@ -237,81 +178,15 @@ export default function GeneratorForm({
             );
           })}
         </div>
-      </div>
-
-      {SECONDARY_SINGLE_SELECT_FIELDS.map((field) => (
-        <div key={field.key} className="space-y-3 border-b border-[#EDE8E0] pb-4">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="flex items-center gap-2 text-[0.8rem] font-semibold tracking-[0.05em] text-[#8B7355]">
-              <span aria-hidden="true">{field.icon}</span>
-              <span>{field.label}</span>
-            </h2>
-            <span className="text-sm text-stone-400">{selections[field.key] || ""}</span>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            {field.options.map((option) => {
-              const selected = selections[field.key] === option;
-
-              return (
-                <Button
-                  key={option}
-                  radius="full"
-                  variant={selected ? "solid" : "bordered"}
-                  className={
-                    selected
-                      ? "chip-selected min-h-11"
-                      : `chip-unselected min-h-11 border-sand/60 ${field.tintClass} text-stone-700`
-                  }
-                  onPress={() => updateSelection(field.key, option)}
-                >
-                  {option}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-
-      <div className="space-y-3 border-b border-[#EDE8E0] pb-4">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="flex items-center gap-2 text-[0.8rem] font-semibold tracking-[0.05em] text-[#8B7355]">
-            <span aria-hidden="true">🌍</span>
-            <span>Specific Ethics</span>
-          </h2>
-          <span className="text-sm text-stone-400">
-            {selections.specificEthics.length} selected
-          </span>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          {ETHICS_OPTIONS.map((option) => {
-            const selected = selections.specificEthics.includes(option);
-
-            return (
-              <Button
-                key={option}
-                radius="full"
-                variant={selected ? "solid" : "bordered"}
-                className={
-                  selected
-                    ? "chip-selected min-h-11"
-                    : "chip-unselected min-h-11 border-sand/60 bg-[#F0F5F0] text-stone-700"
-                }
-                onPress={() => toggleEthic(option)}
-              >
-                {option}
-              </Button>
-            );
-          })}
-        </div>
-      </div>
+      </section>
 
       <Button
         size="lg"
         radius="full"
         className={
           isLoading
-            ? "generate-button-loading w-full text-base font-semibold shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)]"
-            : "w-full bg-sage text-base font-semibold text-white shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)] transition-transform hover:scale-[1.01]"
+            ? "generate-button-loading mt-6 w-full px-6 py-[18px] text-[1rem] font-semibold tracking-[0.05em] shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)]"
+            : "mt-6 w-full bg-sage px-6 py-[18px] text-[1rem] font-semibold tracking-[0.05em] text-white shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)] transition-transform hover:scale-[1.01]"
         }
         isLoading={isLoading}
         isDisabled={!canGenerate}
@@ -328,7 +203,7 @@ export default function GeneratorForm({
       </Button>
 
       {showValidationMessage ? (
-        <p className="font-heading text-sm italic text-sage">
+        <p className="pt-3 font-heading text-sm italic text-sage">
           Select at least one preference to generate your outfit directions.
         </p>
       ) : null}
