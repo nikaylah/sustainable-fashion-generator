@@ -12,7 +12,8 @@
     "dev:server": "node dev-server.js",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "test": "vitest run"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.58.0",
@@ -23,11 +24,15 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.13",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@vitejs/plugin-react": "^5.0.4",
     "concurrently": "^9.2.1",
     "dotenv": "^16.6.1",
     "eslint": "^9.38.0",
+    "jsdom": "^29.0.0",
     "tailwindcss": "^4.1.13",
-    "vite": "^7.1.10"
+    "vite": "^7.1.10",
+    "vitest": "^4.1.0"
   }
 }
