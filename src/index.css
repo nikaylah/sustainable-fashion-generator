@@ -144,6 +144,10 @@ body {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
 }
 
+.fiber-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 .fashion-silhouette-wrap {
   display: flex;
   align-items: center;

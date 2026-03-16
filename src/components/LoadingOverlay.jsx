@@ -92,8 +92,9 @@ export default function LoadingOverlay({ isVisible }) {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.4 }}
                 style={{
-                  fontFamily: "Caveat, cursive",
-                  fontSize: "1.5rem",
+                  fontFamily: "'Give You Glory', cursive",
+                  fontSize: "1.8rem",
+                  fontWeight: 600,
                   color: "#5C4A32",
                   letterSpacing: "0.02em",
                 }}

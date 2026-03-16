@@ -35,12 +35,12 @@ const IMPACT_HINTS = {
 function SingleSelectSection({ field, selections, updateSelection }) {
   if (field.key === "fiberPreference") {
     return (
-      <section className="space-y-5 border-b border-[#EDE8E0] py-8">
-        <div className="flex items-center gap-2 text-[1rem] font-medium tracking-[0.08em] text-[#5C4A32]">
+      <section className="space-y-4 border-b border-[#EDE8E0] py-4 sm:space-y-5 sm:py-8">
+        <div className="flex items-center gap-2 text-[0.75rem] font-medium tracking-[0.08em] text-[#5C4A32] sm:text-[1rem]">
           <span aria-hidden="true">{field.icon}</span>
           <span>{field.label}</span>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="fiber-scroll flex flex-row gap-[10px] overflow-x-auto pb-2 [scroll-snap-type:x_mandatory] [-ms-overflow-style:none] [scrollbar-width:none] md:grid md:grid-cols-2 md:gap-4 md:overflow-visible md:pb-0">
           {field.options.map((option) => {
             const selected = selections[field.key] === option;
             const fiber = FIBER_LIBRARY[option];
@@ -51,32 +51,48 @@ function SingleSelectSection({ field, selections, updateSelection }) {
                 type="button"
                 className={
                   selected
-                    ? "fiber-card-button inner-card-surface border-2 border-sage bg-[#E4F0E4] p-4 text-left ring-2 ring-sage/30 ring-offset-2 ring-offset-[#f8f5ec]"
-                    : "fiber-card-button inner-card-surface border border-stone-200 bg-cream p-4 text-left hover:border-sand/80"
+                    ? "fiber-card-button inner-card-surface min-w-[140px] max-w-[140px] shrink-0 border-2 border-sage bg-[#E4F0E4] p-3 text-left ring-2 ring-sage/30 ring-offset-2 ring-offset-[#f8f5ec] [scroll-snap-align:start] sm:min-w-0 sm:max-w-none sm:p-4"
+                    : "fiber-card-button inner-card-surface min-w-[140px] max-w-[140px] shrink-0 border border-stone-200 bg-cream p-3 text-left hover:border-sand/80 [scroll-snap-align:start] sm:min-w-0 sm:max-w-none sm:p-4"
                 }
                 onClick={() => updateSelection(field.key, option)}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className={selected ? "text-[0.95rem] font-semibold text-sage" : "text-[0.95rem] font-semibold text-stone-900"}>
+                    <p
+                      className={
+                        selected
+                          ? "text-[0.85rem] font-semibold text-sage sm:text-[0.95rem]"
+                          : "text-[0.85rem] font-semibold text-stone-900 sm:text-[0.95rem]"
+                      }
+                    >
                       {option}
                     </p>
-                    <p className={selected ? "mt-1 text-sm italic text-sage/90" : "mt-1 text-sm italic text-sage"}>
+                    <p
+                      className={
+                        selected
+                          ? "mt-1 text-[0.75rem] italic text-sage/90 sm:text-sm"
+                          : "mt-1 text-[0.75rem] italic text-sage sm:text-sm"
+                      }
+                    >
                       {fiber.label}
                     </p>
                   </div>
-                  <span
-                    className={
-                      selected
-                        ? "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sage text-sm text-white shadow-[0_8px_18px_rgba(124,154,126,0.28)]"
-                        : "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-white text-transparent"
-                    }
-                    aria-hidden="true"
-                  >
-                    ✓
-                  </span>
+                  {selected ? (
+                    <span
+                      className="shrink-0 text-sm font-semibold text-sage"
+                      aria-hidden="true"
+                    >
+                      ✓
+                    </span>
+                  ) : null}
                 </div>
-                <p className={selected ? "mt-3 text-[0.72rem] font-medium text-stone-600" : "mt-3 text-[0.72rem] text-stone-500"}>
+                <p
+                  className={
+                    selected
+                      ? "mt-3 text-[0.65rem] font-medium text-stone-600 sm:text-[0.72rem]"
+                      : "mt-3 text-[0.65rem] text-stone-500 sm:text-[0.72rem]"
+                  }
+                >
                   {IMPACT_HINTS[option]}
                 </p>
               </button>
@@ -88,12 +104,12 @@ function SingleSelectSection({ field, selections, updateSelection }) {
   }
 
   return (
-    <section className="space-y-5 border-b border-[#EDE8E0] py-8">
-      <div className="flex items-center gap-2 text-[1rem] font-medium tracking-[0.08em] text-[#5C4A32]">
+    <section className="space-y-4 border-b border-[#EDE8E0] py-4 sm:space-y-5 sm:py-8">
+      <div className="flex items-center gap-2 text-[0.75rem] font-medium tracking-[0.08em] text-[#5C4A32] sm:text-[1rem]">
         <span aria-hidden="true">{field.icon}</span>
         <span>{field.label}</span>
       </div>
-      <div className="flex flex-wrap gap-4">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-4">
         {field.options.map((option) => {
           const selected = selections[field.key] === option;
 
@@ -104,8 +120,8 @@ function SingleSelectSection({ field, selections, updateSelection }) {
               variant={selected ? "solid" : "bordered"}
               className={
                 selected
-                  ? "chip-selected min-h-11 px-6 py-3 text-[0.9rem]"
-                  : `chip-unselected min-h-11 border-sand/60 ${field.tintClass} px-6 py-3 text-[0.9rem] text-stone-700`
+                  ? "chip-selected min-h-11 w-full px-2 py-[10px] text-center text-[0.8rem] sm:w-auto sm:px-6 sm:py-3 sm:text-[0.9rem]"
+                  : `chip-unselected min-h-11 w-full border-sand/60 ${field.tintClass} px-2 py-[10px] text-center text-[0.8rem] text-stone-700 sm:w-auto sm:px-6 sm:py-3 sm:text-[0.9rem]`
               }
               onPress={() => updateSelection(field.key, option)}
             >
@@ -176,7 +192,7 @@ export default function GeneratorForm({
 
   return (
     <div className="space-y-2">
-      <div style={{ marginBottom: "40px", textAlign: "center" }}>
+      <div style={{ marginBottom: "20px", textAlign: "center" }}>
         <p
           style={{
             fontFamily: "'Caveat', cursive",
@@ -191,8 +207,9 @@ export default function GeneratorForm({
         </p>
         <h1
           style={{
-            fontFamily: "'Caveat', cursive",
-            fontSize: "clamp(2.5rem, 6vw, 3.5rem)",
+            fontFamily: "'Give You Glory', cursive",
+            fontWeight: 700,
+            fontSize: "clamp(2rem, 5vw, 3rem)",
             color: "#3D3027",
             lineHeight: 1.2,
             marginBottom: "16px",
@@ -211,7 +228,7 @@ export default function GeneratorForm({
         </h1>
         <p
           style={{
-            fontSize: "0.9rem",
+            fontSize: "0.8rem",
             color: "#8B7355",
             maxWidth: "420px",
             margin: "0 auto",
@@ -236,27 +253,27 @@ export default function GeneratorForm({
         updateSelection={updateSelection}
       />
 
-      <section className="space-y-5 border-b border-[#EDE8E0] py-8">
-        <div className="flex items-center gap-2 text-[1rem] font-medium tracking-[0.08em] text-[#5C4A32]">
+      <section className="space-y-4 border-b border-[#EDE8E0] py-4 sm:space-y-5 sm:py-8">
+        <div className="flex items-center gap-2 text-[0.75rem] font-medium tracking-[0.08em] text-[#5C4A32] sm:text-[1rem]">
           <span aria-hidden="true">🌱</span>
           <span>Design Priorities</span>
         </div>
-        <div className="flex flex-wrap gap-4">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-4">
           {PRIORITY_OPTIONS.map((option) => {
             const selected = selections.designPriorities.includes(option);
 
             return (
               <Button
                 key={option}
-                radius="full"
-                variant={selected ? "solid" : "bordered"}
-                className={
-                  selected
-                    ? "chip-selected min-h-11 px-6 py-3 text-[0.9rem]"
-                    : "chip-unselected min-h-11 border-sand/60 bg-[#EDF2ED] px-6 py-3 text-[0.9rem] text-stone-700"
-                }
-                onPress={() => togglePriority(option)}
-              >
+              radius="full"
+              variant={selected ? "solid" : "bordered"}
+              className={
+                selected
+                  ? "chip-selected min-h-11 w-full px-2 py-[10px] text-center text-[0.8rem] sm:w-auto sm:px-6 sm:py-3 sm:text-[0.9rem]"
+                  : "chip-unselected min-h-11 w-full border-sand/60 bg-[#EDF2ED] px-2 py-[10px] text-center text-[0.8rem] text-stone-700 sm:w-auto sm:px-6 sm:py-3 sm:text-[0.9rem]"
+              }
+              onPress={() => togglePriority(option)}
+            >
                 {option}
               </Button>
             );
@@ -269,8 +286,8 @@ export default function GeneratorForm({
         radius="full"
         className={
           isLoading
-            ? "generate-button-loading generate-button-whimsy mt-6 w-full px-6 py-[18px] text-[1rem] font-semibold tracking-[0.05em] shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)]"
-            : `generate-button-whimsy mt-6 w-full bg-sage px-6 py-[18px] text-[1rem] font-semibold tracking-[0.05em] text-white shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)] ${shouldPulseGenerate ? "generate-button-pulse" : ""}`
+            ? "generate-button-loading generate-button-whimsy mt-4 w-full px-6 py-[14px] text-[0.9rem] font-semibold tracking-[0.05em] shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)] sm:mt-6 sm:py-[18px] sm:text-[1rem]"
+            : `generate-button-whimsy mt-4 w-full bg-sage px-6 py-[14px] text-[0.9rem] font-semibold tracking-[0.05em] text-white shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)] sm:mt-6 sm:py-[18px] sm:text-[1rem] ${shouldPulseGenerate ? "generate-button-pulse" : ""}`
         }
         isLoading={isLoading}
         isDisabled={!canGenerate}

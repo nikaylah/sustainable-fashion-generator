@@ -145,8 +145,9 @@ export default function App() {
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     <p
                       style={{
-                        fontFamily: "Caveat, cursive",
-                        fontSize: "2rem",
+                        fontFamily: "'Give You Glory', cursive",
+                        fontSize: "2.2rem",
+                        fontWeight: 700,
                         color: "#5C4A32",
                         lineHeight: 1.2,
                       }}
