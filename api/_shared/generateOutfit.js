@@ -27,10 +27,82 @@ const FIBER_NARRATIVES = {
   "Conventional Cotton": "the industry baseline - high water use and pesticide dependency",
 };
 
+const BANNED_NAME_WORDS = [
+  "canyon",
+  "desert",
+  "prairie",
+  "garden",
+  "forest",
+  "studio",
+  "whisper",
+  "drift",
+  "reverie",
+  "bloom",
+  "salvage",
+  "dawn",
+  "dusk",
+  "valley",
+  "ridge",
+  "shore",
+  "meadow",
+  "mist",
+  "shadow",
+  "echo",
+];
+
+const FALLBACK_NAMES = {
+  Minimal: {
+    "Organic Hemp": "Soft Authority",
+    "Tencel Lyocell": "Easy Structure",
+    "Recycled Polyester": "Light Work",
+    "Deadstock Silk": "The Still Piece",
+    "Conventional Cotton": "The Quiet Layer",
+  },
+  Earthy: {
+    "Organic Hemp": "Held Loosely",
+    "Tencel Lyocell": "Worn Gently",
+    "Recycled Polyester": "Light Work",
+    "Deadstock Silk": "Carried Softly",
+    "Conventional Cotton": "Something Gentle",
+  },
+  Romantic: {
+    "Organic Hemp": "Carried Softly",
+    "Tencel Lyocell": "Worn Like Water",
+    "Recycled Polyester": "Held Loosely",
+    "Deadstock Silk": "Moving in Silk",
+    "Conventional Cotton": "Something Gentle",
+  },
+  Contemporary: {
+    "Organic Hemp": "Easy Structure",
+    "Tencel Lyocell": "Soft Authority",
+    "Recycled Polyester": "Light Work",
+    "Deadstock Silk": "The Still Piece",
+    "Conventional Cotton": "The Quiet Layer",
+  },
+};
+
 const SYSTEM_PROMPT =
   `Act as a Sustainable Fashion Creative Technologist.
 
 Your Goal: Create a high-end fashion concept based on user inputs. You must return your response in valid JSON format only - no other text, no markdown, no backticks.
+
+⚠️ FIRST RULE - READ THIS BEFORE ANYTHING ELSE:
+
+The outfitName field MUST follow this exact pattern: [feeling word] + [optional: "in" or comma] + [fabric or physical reference].
+
+COPY ONE OF THESE EXACT PATTERNS:
+"Weightless in Hemp" - feeling + in + fiber
+"Soft Authority" - feeling + quality
+"Moving in Silk" - action + in + fiber
+"Held Loosely" - past tense feeling
+"Light Work" - two simple words
+"Something Gentle" - vague but human
+"Easy Structure" - contradiction that works
+
+ABSOLUTELY FORBIDDEN WORDS - if any of these appear in outfitName the response is wrong:
+Dawn, Dew, Dewdrop, Reverie, Canyon, Desert, Prairie, Garden, Forest, Whisper, Drift, Bloom, Salvage, Mist, Shadow, Echo, Valley, Ridge, Shore, Meadow, Cascade, Breeze, Petal, Gossamer, Ethereal, Celestial, Aurora, Luminary
+
+If you are about to use any forbidden word - stop and choose a simpler human word instead.
 
 The Constraints:
 
@@ -41,32 +113,6 @@ The Constraints:
 3. Visual Precision: Describe the garment with specific construction details, fabric weights, and natural dye references where relevant.
 
 4. Design Logic: Explain how the chosen fiber interacts with the user's Style Vibe and Design Priorities for sustainability.
-
-OUTFIT NAME RULE: The outfitName must follow the "Feeling + Fabric" naming convention. It should describe how the garment feels to wear, combining an emotional or sensory quality with a material or physical reference. The name should feel like poetry you can wear - not a place, not a product description, not a candle name.
-
-GOOD examples:
-- "Weightless in Hemp"
-- "Soft Authority"
-- "The Quiet Layer"
-- "Worn Like Water"
-- "Held Loosely"
-- "Moving in Silk"
-- "Breathe, in Linen"
-- "Light Work"
-- "Something Gentle"
-- "The Still Piece"
-- "Carried Softly"
-- "Easy Structure"
-
-RULES:
-- Maximum 4 words
-- Must feel like something a real person would want to wear
-- Never use geographic words like Canyon, Desert, Prairie, Garden, Forest
-- Never use words like Whisper, Drift, Reverie, Bloom, Salvage, Dawn, Dusk
-- The name should make someone feel something about wearing it - not looking at it
-- It should connect to the fiber or silhouette selected without being literal
-
-BAD examples: "Canyon Whisper", "Desert Paradox", "Garden Reverie", "The Gathered Silk Tunic", "Deadstock Wrap Dress"
 
 CRITICAL: outfitDescription must be a MAXIMUM of 12 words. It should be a mood or feeling, not a description. Examples of good descriptions: "Structured softness for those who move with intention." / "Earth-toned layers that breathe with you." / "Romantic restraint in natural cream and sage." BAD example (too long): "A billowing organic hemp midi dress with hand-gathered bodice and flowing three-quarter sleeves." If your description exceeds 12 words it is wrong - shorten it.
 
@@ -101,7 +147,16 @@ function stripCodeFences(text) {
   return text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/, "");
 }
 
-function parseClaudeResponse(content) {
+function normalizeOutfitName(name, selections, result) {
+  const styleFallbacks = FALLBACK_NAMES[selections.styleVibe] || FALLBACK_NAMES.Minimal;
+  return (
+    styleFallbacks[result.selected_fiber] ||
+    styleFallbacks[selections.fiberPreference] ||
+    "The Quiet Layer"
+  );
+}
+
+function parseClaudeResponse(content, selections) {
   const textBlock = content.find((block) => block.type === "text");
 
   if (!textBlock?.text) {
@@ -135,6 +190,8 @@ function parseClaudeResponse(content) {
   if (!parsed.primaryFabricTag || parsed.primaryFabricTag === "") {
     parsed.primaryFabricTag = parsed.selected_fiber;
   }
+
+  parsed.outfitName = normalizeOutfitName(parsed.outfitName, selections, parsed);
 
   return parsed;
 }
@@ -198,14 +255,9 @@ should all feel like they belong in this specific world.
 `;
 
   const anthropic = new Anthropic({ apiKey });
-  const response = await anthropic.messages.create({
-    model: MODEL,
-    max_tokens: 900,
-    system: SYSTEM_PROMPT,
-    messages: [
-      {
-        role: "user",
-        content: `${environmentalContext}
+  const userMessage = `REMINDER: outfitName must use feeling+fabric pattern like "Soft Authority" or "Moving in Silk". Never use Dawn, Dew, Reverie, Canyon or poetic nature words.
+
+${environmentalContext}
 Generate one outfit direction for someone with these SPECIFIC requirements:
 - Hero fiber: ${selections.fiberPreference} - must be the dominant material
 - Aesthetic vibe: ${selections.styleVibe} - must be unmistakably present
@@ -214,12 +266,21 @@ Generate one outfit direction for someone with these SPECIFIC requirements:
 
 IMPORTANT: You must include "selected_fiber" in your JSON response. It must be EXACTLY one of these five strings - copy and paste exactly: "Organic Hemp", "Tencel Lyocell", "Recycled Polyester", "Deadstock Silk", "Conventional Cotton". Do not use any other value. This field is required and must not be null or undefined.
 
-Make sure someone could look at the output and immediately know which options were selected. The selections should create a completely unique result that would look nothing like a different combination of inputs.`,
+Make sure someone could look at the output and immediately know which options were selected. The selections should create a completely unique result that would look nothing like a different combination of inputs.`;
+
+  const response = await anthropic.messages.create({
+    model: MODEL,
+    max_tokens: 900,
+    system: SYSTEM_PROMPT,
+    messages: [
+      {
+        role: "user",
+        content: userMessage,
       },
     ],
   });
 
-  const parsedResponse = parseClaudeResponse(response.content ?? []);
+  const parsedResponse = parseClaudeResponse(response.content ?? [], selections);
   const validatedResponse = validateResult(parsedResponse);
 
   try {
