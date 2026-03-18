@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Card, CardBody, Chip } from "@heroui/react";
 import GeneratorForm from "./components/GeneratorForm";
 import LoadingOverlay from "./components/LoadingOverlay";
+import RecentGenerations from "./components/RecentGenerations";
 import ResultCard from "./components/ResultCard";
 import { generateFashionOutfit } from "./api/claude";
 
@@ -225,6 +226,8 @@ export default function App() {
             </AnimatePresence>
           </div>
         </section>
+
+        <RecentGenerations />
       </div>
     </main>
   );

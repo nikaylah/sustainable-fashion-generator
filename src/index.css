@@ -54,10 +54,25 @@ body {
   color: white;
   border: 1px solid #7c9a7e;
   box-shadow: 0 14px 30px -18px rgba(124, 154, 126, 0.95);
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
 }
 
 .chip-unselected {
   box-shadow: 0 10px 25px -20px rgba(80, 70, 55, 0.7);
+  transition: all 0.2s ease;
+}
+
+.chip-selected-style {
+  box-shadow:
+    0 0 0 3px rgba(124, 154, 126, 0.2),
+    0 4px 12px rgba(124, 154, 126, 0.3);
+}
+
+.chip-selected-priority {
+  box-shadow:
+    0 0 0 3px rgba(124, 154, 126, 0.2),
+    0 4px 12px rgba(196, 168, 130, 0.3);
 }
 
 .direction-panel {
@@ -109,6 +124,12 @@ body {
   animation: pulse-sage 2s ease-in-out infinite;
 }
 
+.generate-button-ready {
+  box-shadow:
+    0 0 0 4px rgba(124, 154, 126, 0.2),
+    0 8px 24px rgba(124, 154, 126, 0.3);
+}
+
 .generate-button-whimsy {
   transform: rotate(-1deg);
   transition: transform 0.2s ease;
@@ -132,16 +153,37 @@ body {
 }
 
 .fiber-card-button {
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease,
-    background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .fiber-card-button:hover {
   transform: translateY(-2px) rotate(0.5deg);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+.fiber-card-unselected {
+  border: 1px solid rgba(15, 30, 63, 0.06);
+  background-color: #fcfaf7;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  transform: translateY(0);
+}
+
+.fiber-card-unselected:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+}
+
+.fiber-card-selected {
+  border: 2px solid #7c9a7e;
+  background-color: #f0f5f0;
+  box-shadow:
+    0 0 0 4px rgba(124, 154, 126, 0.15),
+    0 8px 24px rgba(124, 154, 126, 0.2);
+  transform: translateY(-2px);
+}
+
+.card-selected-pulse {
+  animation: card-select-pulse 0.3s ease forwards;
 }
 
 .fiber-scroll::-webkit-scrollbar {
@@ -210,6 +252,20 @@ body {
 
   50% {
     box-shadow: 0 0 0 8px rgba(124, 154, 126, 0);
+  }
+}
+
+@keyframes card-select-pulse {
+  0% {
+    transform: translateY(-2px) scale(1);
+  }
+
+  40% {
+    transform: translateY(-2px) scale(1.03);
+  }
+
+  100% {
+    transform: translateY(-2px) scale(1);
   }
 }
 

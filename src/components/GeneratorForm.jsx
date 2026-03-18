@@ -32,7 +32,13 @@ const IMPACT_HINTS = {
   "Conventional Cotton": "Baseline / High Water Use",
 };
 
-function SingleSelectSection({ field, selections, updateSelection }) {
+function SingleSelectSection({
+  field,
+  selections,
+  updateSelection,
+  pulsingFiber,
+  onFiberSelect,
+}) {
   if (field.key === "fiberPreference") {
     return (
       <section className="space-y-4 border-b border-[#EDE8E0] py-4 sm:space-y-5 sm:py-8">
@@ -51,10 +57,10 @@ function SingleSelectSection({ field, selections, updateSelection }) {
                 type="button"
                 className={
                   selected
-                    ? "fiber-card-button inner-card-surface min-w-[140px] max-w-[140px] shrink-0 border-2 border-sage bg-[#E4F0E4] p-3 text-left ring-2 ring-sage/30 ring-offset-2 ring-offset-[#f8f5ec] [scroll-snap-align:start] sm:min-w-0 sm:max-w-none sm:p-4"
-                    : "fiber-card-button inner-card-surface min-w-[140px] max-w-[140px] shrink-0 border border-stone-200 bg-cream p-3 text-left hover:border-sand/80 [scroll-snap-align:start] sm:min-w-0 sm:max-w-none sm:p-4"
+                    ? `fiber-card-button fiber-card-selected inner-card-surface min-w-[140px] max-w-[140px] shrink-0 p-3 text-left [scroll-snap-align:start] sm:min-w-0 sm:max-w-none sm:p-4 ${pulsingFiber === option ? "card-selected-pulse" : ""}`
+                    : "fiber-card-button fiber-card-unselected inner-card-surface min-w-[140px] max-w-[140px] shrink-0 p-3 text-left [scroll-snap-align:start] sm:min-w-0 sm:max-w-none sm:p-4"
                 }
-                onClick={() => updateSelection(field.key, option)}
+                onClick={() => onFiberSelect(option)}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -120,7 +126,7 @@ function SingleSelectSection({ field, selections, updateSelection }) {
               variant={selected ? "solid" : "bordered"}
               className={
                 selected
-                  ? "chip-selected min-h-11 w-full px-2 py-[10px] text-center text-[0.8rem] sm:w-auto sm:px-6 sm:py-3 sm:text-[0.9rem]"
+                  ? "chip-selected chip-selected-style min-h-11 w-full px-2 py-[10px] text-center text-[0.8rem] sm:w-auto sm:px-6 sm:py-3 sm:text-[0.9rem]"
                   : `chip-unselected min-h-11 w-full border-sand/60 ${field.tintClass} px-2 py-[10px] text-center text-[0.8rem] text-stone-700 sm:w-auto sm:px-6 sm:py-3 sm:text-[0.9rem]`
               }
               onPress={() => updateSelection(field.key, option)}
@@ -142,6 +148,7 @@ export default function GeneratorForm({
   canGenerate,
 }) {
   const [showValidationMessage, setShowValidationMessage] = useState(false);
+  const [pulsingFiber, setPulsingFiber] = useState("");
   const shouldPulseGenerate = Boolean(
     !isLoading && selections.fiberPreference && selections.styleVibe
   );
@@ -167,6 +174,11 @@ export default function GeneratorForm({
     }));
   }
 
+  function handleFiberSelect(fiberName) {
+    setPulsingFiber(fiberName);
+    updateSelection("fiberPreference", fiberName);
+  }
+
   function togglePriority(priority) {
     setSelections((current) => {
       const exists = current.designPriorities.includes(priority);
@@ -189,6 +201,16 @@ export default function GeneratorForm({
     setShowValidationMessage(false);
     onGenerate(selections);
   }
+
+  useEffect(() => {
+    if (!pulsingFiber) return undefined;
+
+    const timer = window.setTimeout(() => {
+      setPulsingFiber("");
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [pulsingFiber]);
 
   return (
     <div className="space-y-2">
@@ -245,12 +267,16 @@ export default function GeneratorForm({
         field={FIBER_FIELD}
         selections={selections}
         updateSelection={updateSelection}
+        pulsingFiber={pulsingFiber}
+        onFiberSelect={handleFiberSelect}
       />
 
       <SingleSelectSection
         field={STYLE_FIELD}
         selections={selections}
         updateSelection={updateSelection}
+        pulsingFiber={pulsingFiber}
+        onFiberSelect={handleFiberSelect}
       />
 
       <section className="space-y-4 border-b border-[#EDE8E0] py-4 sm:space-y-5 sm:py-8">
@@ -269,7 +295,7 @@ export default function GeneratorForm({
               variant={selected ? "solid" : "bordered"}
               className={
                 selected
-                  ? "chip-selected min-h-11 w-full px-2 py-[10px] text-center text-[0.8rem] sm:w-auto sm:px-6 sm:py-3 sm:text-[0.9rem]"
+                  ? "chip-selected chip-selected-priority min-h-11 w-full px-2 py-[10px] text-center text-[0.8rem] sm:w-auto sm:px-6 sm:py-3 sm:text-[0.9rem]"
                   : "chip-unselected min-h-11 w-full border-sand/60 bg-[#EDF2ED] px-2 py-[10px] text-center text-[0.8rem] text-stone-700 sm:w-auto sm:px-6 sm:py-3 sm:text-[0.9rem]"
               }
               onPress={() => togglePriority(option)}
@@ -287,7 +313,7 @@ export default function GeneratorForm({
         className={
           isLoading
             ? "generate-button-loading generate-button-whimsy mt-4 w-full px-6 py-[14px] text-[0.9rem] font-semibold tracking-[0.05em] shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)] sm:mt-6 sm:py-[18px] sm:text-[1rem]"
-            : `generate-button-whimsy mt-4 w-full bg-sage px-6 py-[14px] text-[0.9rem] font-semibold tracking-[0.05em] text-white shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)] sm:mt-6 sm:py-[18px] sm:text-[1rem] ${shouldPulseGenerate ? "generate-button-pulse" : ""}`
+            : `generate-button-whimsy mt-4 w-full bg-sage px-6 py-[14px] text-[0.9rem] font-semibold tracking-[0.05em] text-white shadow-[0_18px_40px_-24px_rgba(124,154,126,0.95)] sm:mt-6 sm:py-[18px] sm:text-[1rem] ${shouldPulseGenerate ? "generate-button-pulse generate-button-ready" : ""}`
         }
         isLoading={isLoading}
         isDisabled={!canGenerate}

@@ -4,6 +4,7 @@ import {
   generateOutfitFromSelections,
   validateSelections,
 } from "./api/_shared/generateOutfit.js";
+import { kv } from "@vercel/kv";
 
 const HOST = "127.0.0.1";
 const PORT = 3001;
@@ -36,6 +37,29 @@ function readJsonBody(req) {
 }
 
 const server = http.createServer(async (req, res) => {
+  if (req.url === "/api/recent") {
+    if (req.method !== "GET") {
+      return sendJson(res, 405, { error: "method not allowed" });
+    }
+
+    try {
+      const items = await kv.lrange("recent_generations", 0, 5);
+      const parsed = items
+        .map((item) => {
+          try {
+            return JSON.parse(item);
+          } catch {
+            return null;
+          }
+        })
+        .filter(Boolean);
+
+      return sendJson(res, 200, { generations: parsed });
+    } catch {
+      return sendJson(res, 200, { generations: [] });
+    }
+  }
+
   if (req.url !== "/api/generate") {
     return sendJson(res, 404, { error: "not found" });
   }

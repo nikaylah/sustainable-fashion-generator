@@ -1,4 +1,4 @@
-import { calculateScore, getFiberData, FIBER_LIBRARY } from "./fabrics";
+import { calculateScore, getFiberData, FIBER_LIBRARY } from "../../constants/fabrics";
 
 describe("fabric helpers", () => {
   it("calculates weighted fiber scores", () => {

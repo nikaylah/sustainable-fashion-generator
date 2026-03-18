@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { kv } from "@vercel/kv";
 
 const MODEL = "claude-sonnet-4-20250514";
 const ENVIRONMENT_THEMES = {
@@ -186,6 +187,23 @@ Make sure someone could look at the output and immediately know which options we
   });
 
   const parsedResponse = parseClaudeResponse(response.content ?? []);
+  const validatedResponse = validateResult(parsedResponse);
 
-  return validateResult(parsedResponse);
+  try {
+    const recentEntry = {
+      outfitName: validatedResponse.outfitName,
+      fiber: validatedResponse.selected_fiber,
+      styleVibe,
+      colorPalette: validatedResponse.colorPalette?.slice(0, 3),
+      score: validatedResponse.selected_fiber ? "calculated" : null,
+      timestamp: Date.now(),
+    };
+
+    await kv.lpush("recent_generations", JSON.stringify(recentEntry));
+    await kv.ltrim("recent_generations", 0, 19);
+  } catch {
+    // don't break generation if kv isn't configured
+  }
+
+  return validatedResponse;
 }

@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import InsightPanel from "./InsightPanel";
+import InsightPanel from "../../components/InsightPanel";
 
 describe("InsightPanel", () => {
   it("renders the sustainability score details for a known fiber", () => {

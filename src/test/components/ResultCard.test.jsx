@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { HeroUIProvider } from "@heroui/react";
-import ResultCard from "./ResultCard";
+import ResultCard from "../../components/ResultCard";
 
-vi.mock("./FashionSilhouette", () => ({
+vi.mock("../../components/FashionSilhouette", () => ({
   default: function MockFashionSilhouette() {
     return <div data-testid="fashion-silhouette" />;
   },
