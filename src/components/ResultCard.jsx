@@ -22,6 +22,87 @@ const LOADING_PHRASES = [
   "Shaping your direction...",
 ];
 
+function DesignConnections({ selections, result }) {
+  if (!selections?.fiberPreference && !selections?.styleVibe) return null;
+
+  const connections = [];
+
+  if (selections.fiberPreference) {
+    connections.push({
+      icon: "🌿",
+      text: `${selections.fiberPreference} informed the fabric weight and drape`,
+    });
+  }
+
+  if (selections.styleVibe) {
+    const vibeMap = {
+      Minimal: "the clean silhouette and structured lines",
+      Earthy: "the organic texture and grounded proportions",
+      Romantic: "the gathered layers and soft movement",
+      Contemporary: "the asymmetric cut and modern proportions",
+    };
+    const vibeResult = vibeMap[selections.styleVibe] || "the overall silhouette";
+    connections.push({
+      icon: "✦",
+      text: `${selections.styleVibe} shaped ${vibeResult}`,
+    });
+  }
+
+  if (selections.designPriorities?.length > 0) {
+    const priority = selections.designPriorities[0];
+    const priorityMap = {
+      Breathability: "open weave constructions and light fabric weight",
+      Durability: "reinforced seaming and structured fabric choices",
+      "Minimal Environmental Impact": "certified fibers and natural dye palette",
+      "Modest Layering": "longer hemlines and layered silhouette",
+    };
+    const priorityResult = priorityMap[priority] || "the construction details";
+    connections.push({
+      icon: "◎",
+      text: `${priority} guided ${priorityResult}`,
+    });
+  }
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "6px",
+        padding: "16px",
+        backgroundColor: "rgba(124, 154, 126, 0.06)",
+        borderRadius: "12px",
+        margin: "16px 0",
+      }}
+    >
+      <p
+        style={{
+          fontSize: "0.6rem",
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          color: "#7C9A7E",
+          marginBottom: "4px",
+        }}
+      >
+        how your choices shaped this
+      </p>
+      {connections.map((connection, index) => (
+        <p
+          key={`${connection.icon}-${index}`}
+          style={{
+            fontSize: "0.8rem",
+            color: "#5C4A32",
+            lineHeight: 1.5,
+          }}
+        >
+          <span style={{ marginRight: "8px" }}>{connection.icon}</span>
+          {connection.text}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 function getFirstSentence(text) {
   if (!text) return "";
   const match = text.match(/^.*?[.!?](?:\s|$)/);
@@ -169,6 +250,8 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
                   {getFirstSentence(result.outfitDescription)}
                 </p>
               </div>
+
+              <DesignConnections selections={selections} result={result} />
 
               <div className="overflow-x-auto pb-2">
                 <div className="mx-auto flex w-max gap-5">
