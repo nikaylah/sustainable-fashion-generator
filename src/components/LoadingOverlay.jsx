@@ -13,10 +13,23 @@ const LOADING_PHRASES = [
 export default function LoadingOverlay({ isVisible }) {
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [dots, setDots] = useState("");
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    if (!isVisible) return;
-    setPhraseIndex(0);
+    if (isVisible) {
+      setPhraseIndex(0);
+      setProgress(0);
+
+      const progressTimer = setTimeout(() => setProgress(85), 200);
+      return () => clearTimeout(progressTimer);
+    }
+
+    setProgress(100);
+    return undefined;
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (!isVisible) return undefined;
 
     const phraseInterval = setInterval(() => {
       setPhraseIndex((i) => (i + 1) % LOADING_PHRASES.length);
@@ -53,6 +66,33 @@ export default function LoadingOverlay({ isVisible }) {
             gap: "32px",
           }}
         >
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "3px",
+              backgroundColor: "#E8E0D5",
+              zIndex: 10,
+            }}
+          >
+            <div
+              style={{
+                height: "100%",
+                width: `${progress}%`,
+                backgroundColor: "#7C9A7E",
+                borderRadius: "0 2px 2px 0",
+                transition:
+                  progress === 0
+                    ? "none"
+                    : progress === 100
+                      ? "width 0.3s ease"
+                      : "width 9s ease-out",
+              }}
+            />
+          </div>
+
           <motion.div
             animate={{ opacity: [0.3, 0.7, 0.3] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}

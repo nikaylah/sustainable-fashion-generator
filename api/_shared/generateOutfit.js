@@ -42,6 +42,32 @@ The Constraints:
 
 4. Design Logic: Explain how the chosen fiber interacts with the user's Style Vibe and Design Priorities for sustainability.
 
+OUTFIT NAME RULE: The outfitName must follow the "Feeling + Fabric" naming convention. It should describe how the garment feels to wear, combining an emotional or sensory quality with a material or physical reference. The name should feel like poetry you can wear - not a place, not a product description, not a candle name.
+
+GOOD examples:
+- "Weightless in Hemp"
+- "Soft Authority"
+- "The Quiet Layer"
+- "Worn Like Water"
+- "Held Loosely"
+- "Moving in Silk"
+- "Breathe, in Linen"
+- "Light Work"
+- "Something Gentle"
+- "The Still Piece"
+- "Carried Softly"
+- "Easy Structure"
+
+RULES:
+- Maximum 4 words
+- Must feel like something a real person would want to wear
+- Never use geographic words like Canyon, Desert, Prairie, Garden, Forest
+- Never use words like Whisper, Drift, Reverie, Bloom, Salvage, Dawn, Dusk
+- The name should make someone feel something about wearing it - not looking at it
+- It should connect to the fiber or silhouette selected without being literal
+
+BAD examples: "Canyon Whisper", "Desert Paradox", "Garden Reverie", "The Gathered Silk Tunic", "Deadstock Wrap Dress"
+
 CRITICAL: outfitDescription must be a MAXIMUM of 12 words. It should be a mood or feeling, not a description. Examples of good descriptions: "Structured softness for those who move with intention." / "Earth-toned layers that breathe with you." / "Romantic restraint in natural cream and sage." BAD example (too long): "A billowing organic hemp midi dress with hand-gathered bodice and flowing three-quarter sleeves." If your description exceeds 12 words it is wrong - shorten it.
 
 JSON Schema - return EXACTLY this structure:

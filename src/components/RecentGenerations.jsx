@@ -11,11 +11,13 @@ function getTimeAgo(timestamp) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-export default function RecentGenerations() {
+export default function RecentGenerations({ refreshKey = 0 }) {
   const [generations, setGenerations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
+
     fetch("/api/recent")
       .then((response) => response.json())
       .then((data) => {
@@ -23,7 +25,7 @@ export default function RecentGenerations() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [refreshKey]);
 
   if (loading || generations.length === 0) return null;
 
