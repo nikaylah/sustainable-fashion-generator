@@ -49,8 +49,8 @@ export default function App() {
     <main className="min-h-screen bg-cream px-4 py-8 text-stone-800 sm:px-6 lg:px-8">
       <LoadingOverlay isVisible={isLoading} />
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-        <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
-          <Card className="main-card-surface bg-white/80 backdrop-blur md:sticky md:top-8 md:self-start">
+        <section className="grid items-start gap-6 md:grid-cols-[minmax(380px,1fr)_minmax(0,1.5fr)]">
+          <Card className="main-card-surface min-w-0 w-full md:min-w-[320px] bg-white/80 backdrop-blur md:sticky md:top-8 md:self-start">
             <CardBody className="gap-6 p-6 sm:p-8">
               <GeneratorForm
                 selections={selections}
@@ -94,7 +94,7 @@ export default function App() {
             </CardBody>
           </Card>
 
-          <div className="flex min-h-[420px] flex-col gap-6 items-stretch">
+          <div className="flex min-h-[420px] w-full min-w-0 flex-col items-stretch">
             <AnimatePresence mode="wait">
               {result ? (
                 <div key={cardKey} className="w-full">
@@ -226,10 +226,10 @@ export default function App() {
                 </motion.div>
               )}
             </AnimatePresence>
-
-            <RecentGenerations refreshKey={recentRefreshKey} />
           </div>
         </section>
+
+        <RecentGenerations refreshKey={recentRefreshKey} />
       </div>
     </main>
   );
