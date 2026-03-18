@@ -125,6 +125,23 @@ function getFabricImage(name = "") {
   return woolImage;
 }
 
+function getSelectedFiberName(result, selections) {
+  if (result?.selected_fiber) return result.selected_fiber;
+  if (selections?.fiberPreference) return selections.fiberPreference;
+
+  const firstFabricName = result?.fabrics?.[0]?.name?.toLowerCase() || "";
+
+  if (firstFabricName.includes("hemp")) return "Organic Hemp";
+  if (firstFabricName.includes("tencel") || firstFabricName.includes("lyocell")) {
+    return "Tencel Lyocell";
+  }
+  if (firstFabricName.includes("polyester")) return "Recycled Polyester";
+  if (firstFabricName.includes("silk")) return "Deadstock Silk";
+  if (firstFabricName.includes("cotton")) return "Conventional Cotton";
+
+  return null;
+}
+
 function LoadingCard() {
   const [phraseIndex, setPhraseIndex] = useState(0);
 
@@ -173,44 +190,122 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
   const [showReasoning, setShowReasoning] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const shareCardRef = useRef(null);
-  const fiberData = FIBER_LIBRARY[result?.selected_fiber];
+  const selectedFiberName = getSelectedFiberName(result, selections);
+  const fiberData = selectedFiberName ? FIBER_LIBRARY[selectedFiberName] : null;
   const score = fiberData ? calculateScore(fiberData) : null;
 
   useEffect(() => {
     setShowReasoning(false);
   }, [result?.outfitName]);
 
+  const downloadShareImage = (downloadSource) => {
+    const a = document.createElement("a");
+    a.href = downloadSource;
+    a.download = `${result.outfitName.replace(/\s+/g, "-").toLowerCase()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
   const handleShare = async () => {
     if (!shareCardRef.current || !result) return;
 
     setIsSharing(true);
+    const supportsNativeFileShare =
+      typeof navigator !== "undefined" &&
+      typeof navigator.share === "function" &&
+      typeof navigator.canShare === "function";
+    const previewWindow = !supportsNativeFileShare
+      ? window.open("", "_blank", "noopener,noreferrer")
+      : null;
+
     try {
+      await document.fonts?.ready?.catch?.(() => {});
+      await new Promise((resolve) => window.requestAnimationFrame(() => resolve()));
+
       const canvas = await html2canvas(shareCardRef.current, {
         scale: 2,
         useCORS: true,
         backgroundColor: "#f8f5ec",
+        logging: false,
       });
+      const blob = await new Promise((resolve) => {
+        canvas.toBlob((nextBlob) => resolve(nextBlob), "image/png");
+      });
+      const file = blob
+        ? new File([blob], "my-sustainable-design.png", { type: "image/png" })
+        : null;
+      const shareTextScore = score ?? "—";
 
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
-
-        const file = new File([blob], "my-sustainable-design.png", { type: "image/png" });
-
-        if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      if (file && supportsNativeFileShare && navigator.canShare({ files: [file] })) {
+        try {
           await navigator.share({
             title: result.outfitName,
-            text: `I designed "${result.outfitName}" - a sustainable fashion concept with a ${score}/100 impact score.`,
+            text: `I designed "${result.outfitName}" - a sustainable fashion concept with a ${shareTextScore}/100 impact score.`,
             files: [file],
           });
-        } else {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `${result.outfitName.replace(/\s+/g, "-").toLowerCase()}.png`;
-          a.click();
-          URL.revokeObjectURL(url);
+          return;
+        } catch {
+          // fall through to download if native share is unavailable or dismissed
         }
-      });
+      }
+
+      const previewSource = blob ? URL.createObjectURL(blob) : canvas.toDataURL("image/png");
+
+      if (previewWindow && !previewWindow.closed) {
+        previewWindow.document.write(`
+          <html>
+            <head>
+              <title>${result.outfitName}</title>
+              <style>
+                body {
+                  margin: 0;
+                  padding: 24px;
+                  font-family: Georgia, serif;
+                  background: #f8f5ec;
+                  color: #3D3027;
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  gap: 16px;
+                }
+                img {
+                  max-width: min(100%, 520px);
+                  border-radius: 20px;
+                  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+                }
+                a {
+                  color: white;
+                  background: #7C9A7E;
+                  padding: 12px 20px;
+                  border-radius: 999px;
+                  text-decoration: none;
+                  font-weight: 600;
+                }
+              </style>
+            </head>
+            <body>
+              <img src="${previewSource}" alt="${result.outfitName}" />
+              <a href="${previewSource}" download="${result.outfitName
+                .replace(/\s+/g, "-")
+                .toLowerCase()}.png">download image</a>
+            </body>
+          </html>
+        `);
+        previewWindow.document.close();
+
+        if (blob) {
+          window.setTimeout(() => URL.revokeObjectURL(previewSource), 60000);
+        }
+        return;
+      }
+
+      if (blob) {
+        downloadShareImage(previewSource);
+        window.setTimeout(() => URL.revokeObjectURL(previewSource), 1000);
+      } else {
+        downloadShareImage(canvas.toDataURL("image/png"));
+      }
     } catch (err) {
       console.error("Share failed:", err);
     } finally {
@@ -422,7 +517,7 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
               <ShareCard
                 forwardRef={shareCardRef}
                 result={result}
-                selectedFiber={result.selected_fiber}
+                selectedFiber={selectedFiberName}
                 score={score}
               />
             </CardBody>

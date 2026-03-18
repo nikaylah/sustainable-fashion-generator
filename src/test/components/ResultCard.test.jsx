@@ -1,6 +1,11 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { HeroUIProvider } from "@heroui/react";
 import ResultCard from "../../components/ResultCard";
+import html2canvas from "html2canvas";
+
+vi.mock("html2canvas", () => ({
+  default: vi.fn(),
+}));
 
 vi.mock("../../components/FashionSilhouette", () => ({
   default: function MockFashionSilhouette() {
@@ -41,6 +46,10 @@ const result = {
 };
 
 describe("ResultCard", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("renders the editorial result view with insight panel content", () => {
     renderWithProvider(
       <ResultCard
@@ -71,5 +80,66 @@ describe("ResultCard", () => {
     );
 
     expect(screen.getByText("Reading your values...")).toBeInTheDocument();
+  });
+
+  it("creates a share image when the share button is pressed", async () => {
+    const blob = new Blob(["share-image"], { type: "image/png" });
+    const clickSpy = vi.fn();
+    const writeSpy = vi.fn();
+    const closeSpy = vi.fn();
+    const originalCreateElement = document.createElement.bind(document);
+    const createElementSpy = vi.spyOn(document, "createElement").mockImplementation((tagName) => {
+      if (tagName === "a") {
+        const anchor = originalCreateElement("a");
+        anchor.click = clickSpy;
+        return anchor;
+      }
+
+      return originalCreateElement(tagName);
+    });
+
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:test-url");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    vi.spyOn(window, "open").mockReturnValue({
+      closed: false,
+      document: {
+        write: writeSpy,
+        close: closeSpy,
+      },
+    });
+
+    Object.defineProperty(window.navigator, "share", {
+      configurable: true,
+      value: undefined,
+    });
+    Object.defineProperty(window.navigator, "canShare", {
+      configurable: true,
+      value: undefined,
+    });
+
+    html2canvas.mockResolvedValue({
+      toBlob: (callback) => callback(blob),
+    });
+
+    renderWithProvider(
+      <ResultCard
+        result={result}
+        selections={{
+          fiberPreference: "Organic Hemp",
+          styleVibe: "Minimal",
+          designPriorities: ["Breathability"],
+        }}
+        onGenerateAnother={() => {}}
+        isLoading={false}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /share this design/i }));
+
+    await waitFor(() => {
+      expect(html2canvas).toHaveBeenCalled();
+      expect(writeSpy).toHaveBeenCalled();
+      expect(closeSpy).toHaveBeenCalled();
+    });
   });
 });

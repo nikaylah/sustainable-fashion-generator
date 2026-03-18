@@ -9,7 +9,8 @@ export default function ShareCard({ result, selectedFiber, score, forwardRef }) 
         width: "400px",
         height: "500px",
         backgroundColor: "#f8f5ec",
-        backgroundImage: "url('https://www.transparenttextures.com/patterns/cream-paper.png')",
+        backgroundImage:
+          "radial-gradient(circle at top left, rgba(255,255,255,0.5), transparent 42%), linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0))",
         padding: "40px 32px",
         display: "flex",
         flexDirection: "column",
