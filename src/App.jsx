@@ -19,6 +19,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [cardKey, setCardKey] = useState(0);
+  const [recentRefreshKey, setRecentRefreshKey] = useState(0);
 
   const canGenerate = !isLoading;
 
@@ -32,6 +33,7 @@ export default function App() {
     try {
       const generated = await generateFashionOutfit(nextSelections);
       setResult(generated);
+      setRecentRefreshKey((value) => value + 1);
     } catch (generationError) {
       setError(
         generationError instanceof Error
@@ -92,7 +94,7 @@ export default function App() {
             </CardBody>
           </Card>
 
-          <div className="flex min-h-[420px] items-stretch">
+          <div className="flex min-h-[420px] flex-col gap-6 items-stretch">
             <AnimatePresence mode="wait">
               {result ? (
                 <div key={cardKey} className="w-full">
@@ -224,10 +226,10 @@ export default function App() {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            <RecentGenerations refreshKey={recentRefreshKey} />
           </div>
         </section>
-
-        <RecentGenerations />
       </div>
     </main>
   );

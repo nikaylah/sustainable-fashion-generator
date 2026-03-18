@@ -14,11 +14,17 @@ export default async function handler(req, res) {
 
   try {
     const redis = getRedis();
+
+    console.log("KV_REST_API_URL exists:", !!process.env.KV_REST_API_URL);
+    console.log("KV_REST_API_TOKEN exists:", !!process.env.KV_REST_API_TOKEN);
+
     const items = await redis.lrange("recent_generations", 0, 5);
-    const parsed = items
+    console.log("Items from Redis:", items?.length);
+
+    const parsed = (items || [])
       .map((item) => {
         try {
-          return JSON.parse(item);
+          return typeof item === "string" ? JSON.parse(item) : item;
         } catch {
           return null;
         }
@@ -26,7 +32,8 @@ export default async function handler(req, res) {
       .filter(Boolean);
 
     return res.status(200).json({ generations: parsed });
-  } catch {
-    return res.status(200).json({ generations: [] });
+  } catch (e) {
+    console.error("Redis error:", e.message);
+    return res.status(200).json({ generations: [], error: e.message });
   }
 }
