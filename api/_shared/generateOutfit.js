@@ -1,5 +1,12 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { kv } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
+
+function getRedis() {
+  return new Redis({
+    url: process.env.KV_REST_API_URL,
+    token: process.env.KV_REST_API_TOKEN,
+  });
+}
 
 const MODEL = "claude-sonnet-4-20250514";
 const ENVIRONMENT_THEMES = {
@@ -199,8 +206,9 @@ Make sure someone could look at the output and immediately know which options we
       timestamp: Date.now(),
     };
 
-    await kv.lpush("recent_generations", JSON.stringify(recentEntry));
-    await kv.ltrim("recent_generations", 0, 19);
+    const redis = getRedis();
+    await redis.lpush("recent_generations", JSON.stringify(recentEntry));
+    await redis.ltrim("recent_generations", 0, 19);
   } catch {
     // don't break generation if kv isn't configured
   }

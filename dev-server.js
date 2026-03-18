@@ -1,10 +1,20 @@
-import "dotenv/config";
+import dotenv from "dotenv";
 import http from "node:http";
 import {
   generateOutfitFromSelections,
   validateSelections,
 } from "./api/_shared/generateOutfit.js";
-import { kv } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
+
+dotenv.config({ path: ".env.local", override: true });
+dotenv.config();
+
+function getRedis() {
+  return new Redis({
+    url: process.env.KV_REST_API_URL,
+    token: process.env.KV_REST_API_TOKEN,
+  });
+}
 
 const HOST = "127.0.0.1";
 const PORT = 3001;
@@ -43,7 +53,8 @@ const server = http.createServer(async (req, res) => {
     }
 
     try {
-      const items = await kv.lrange("recent_generations", 0, 5);
+      const redis = getRedis();
+      const items = await redis.lrange("recent_generations", 0, 5);
       const parsed = items
         .map((item) => {
           try {

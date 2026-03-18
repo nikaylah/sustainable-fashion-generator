@@ -1,4 +1,11 @@
-import { kv } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
+
+function getRedis() {
+  return new Redis({
+    url: process.env.KV_REST_API_URL,
+    token: process.env.KV_REST_API_TOKEN,
+  });
+}
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
@@ -6,7 +13,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const items = await kv.lrange("recent_generations", 0, 5);
+    const redis = getRedis();
+    const items = await redis.lrange("recent_generations", 0, 5);
     const parsed = items
       .map((item) => {
         try {
