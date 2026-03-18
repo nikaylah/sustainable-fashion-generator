@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import html2canvas from "html2canvas";
 import { Button, Card, CardBody } from "@heroui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import FashionSilhouette from "./FashionSilhouette";
 import InsightPanel from "./InsightPanel";
+import ShareCard from "./ShareCard";
+import { FIBER_LIBRARY, calculateScore } from "../constants/fabrics";
 import linenImage from "../assets/swatches/linen.jpg";
 import cottonImage from "../assets/swatches/cotton.jpg";
 import cottonFabricImage from "../assets/swatches/cottonfabric.jpg";
@@ -87,10 +90,52 @@ function LoadingCard() {
 
 export default function ResultCard({ result, selections, onGenerateAnother, isLoading }) {
   const [showReasoning, setShowReasoning] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const shareCardRef = useRef(null);
+  const fiberData = FIBER_LIBRARY[result?.selected_fiber];
+  const score = fiberData ? calculateScore(fiberData) : null;
 
   useEffect(() => {
     setShowReasoning(false);
   }, [result?.outfitName]);
+
+  const handleShare = async () => {
+    if (!shareCardRef.current || !result) return;
+
+    setIsSharing(true);
+    try {
+      const canvas = await html2canvas(shareCardRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#f8f5ec",
+      });
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+
+        const file = new File([blob], "my-sustainable-design.png", { type: "image/png" });
+
+        if (navigator.share && navigator.canShare?.({ files: [file] })) {
+          await navigator.share({
+            title: result.outfitName,
+            text: `I designed "${result.outfitName}" - a sustainable fashion concept with a ${score}/100 impact score.`,
+            files: [file],
+          });
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${result.outfitName.replace(/\s+/g, "-").toLowerCase()}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      });
+    } catch (err) {
+      console.error("Share failed:", err);
+    } finally {
+      setIsSharing(false);
+    }
+  };
 
   return (
     <div className="flex h-full w-full flex-col gap-6">
@@ -260,15 +305,43 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
                 </AnimatePresence>
               </div>
 
-              <Button
-                radius="full"
-                variant="bordered"
-                className="mx-auto block min-h-11 w-full rounded-full border-2 border-sage bg-transparent px-6 py-2.5 text-sm font-semibold text-sage transition-colors duration-300 hover:bg-sage hover:text-white sm:w-fit"
-                isLoading={isLoading}
-                onPress={onGenerateAnother}
-              >
-                Regenerate
-              </Button>
+              <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+                <button
+                  onClick={handleShare}
+                  disabled={isSharing}
+                  style={{
+                    padding: "12px 24px",
+                    borderRadius: "999px",
+                    border: "2px solid #7C9A7E",
+                    backgroundColor: "#7C9A7E",
+                    color: "white",
+                    fontSize: "0.875rem",
+                    fontWeight: "600",
+                    cursor: isSharing ? "wait" : "pointer",
+                    opacity: isSharing ? 0.7 : 1,
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  {isSharing ? "Creating..." : "↑ Share This Design"}
+                </button>
+
+                <Button
+                  radius="full"
+                  variant="bordered"
+                  className="min-h-11 w-full rounded-full border-2 border-sage bg-transparent px-6 py-2.5 text-sm font-semibold text-sage transition-colors duration-300 hover:bg-sage hover:text-white sm:w-fit"
+                  isLoading={isLoading}
+                  onPress={onGenerateAnother}
+                >
+                  Regenerate
+                </Button>
+              </div>
+
+              <ShareCard
+                forwardRef={shareCardRef}
+                result={result}
+                selectedFiber={result.selected_fiber}
+                score={score}
+              />
             </CardBody>
           </Card>
         </motion.div>

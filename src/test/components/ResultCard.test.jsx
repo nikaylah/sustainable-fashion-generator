@@ -51,7 +51,7 @@ describe("ResultCard", () => {
       />
     );
 
-    expect(screen.getByText("Soft Utility Form")).toBeInTheDocument();
+    expect(screen.getAllByText("Soft Utility Form").length).toBeGreaterThan(0);
     expect(screen.getByTestId("fashion-silhouette")).toBeInTheDocument();
     expect(screen.getByText("Organic Hemp Twill")).toBeInTheDocument();
     expect(screen.getByText("Clay")).toBeInTheDocument();
