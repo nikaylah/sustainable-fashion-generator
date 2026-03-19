@@ -116,9 +116,14 @@ describe("ResultCard", () => {
     fireEvent.click(screen.getByRole("button", { name: /share this design/i }));
 
     await waitFor(() => {
-      expect(html2canvas).toHaveBeenCalled();
       expect(screen.getByText(/your share card is ready/i)).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /download image/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /download image/i }));
+
+    await waitFor(() => {
+      expect(html2canvas).toHaveBeenCalled();
     });
   });
 });

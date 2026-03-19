@@ -189,7 +189,7 @@ function LoadingCard() {
 export default function ResultCard({ result, selections, onGenerateAnother, isLoading }) {
   const [showReasoning, setShowReasoning] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
-  const [sharePreviewUrl, setSharePreviewUrl] = useState(null);
+  const [isSharePreviewOpen, setIsSharePreviewOpen] = useState(false);
   const shareCardRef = useRef(null);
   const selectedFiberName = getSelectedFiberName(result, selections);
   const fiberData = selectedFiberName ? FIBER_LIBRARY[selectedFiberName] : null;
@@ -198,14 +198,6 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
   useEffect(() => {
     setShowReasoning(false);
   }, [result?.outfitName]);
-
-  useEffect(() => {
-    return () => {
-      if (sharePreviewUrl?.startsWith("blob:")) {
-        URL.revokeObjectURL(sharePreviewUrl);
-      }
-    };
-  }, [sharePreviewUrl]);
 
   const downloadShareImage = (downloadSource) => {
     const a = document.createElement("a");
@@ -216,9 +208,28 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
     a.remove();
   };
 
-  const handleShare = async () => {
-    if (!shareCardRef.current || !result) return;
+  const captureShareCard = async () => {
+    if (!shareCardRef.current || !result) {
+      throw new Error("share card wasn't ready yet.");
+    }
 
+    await document.fonts?.ready?.catch?.(() => {});
+    await new Promise((resolve) => window.requestAnimationFrame(() => resolve()));
+
+    return html2canvas(shareCardRef.current, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#f8f5ec",
+      logging: false,
+    });
+  };
+
+  const handleShare = () => {
+    if (!result) return;
+    setIsSharePreviewOpen(true);
+  };
+
+  const handleShareExport = async () => {
     setIsSharing(true);
     const supportsNativeFileShare =
       typeof navigator !== "undefined" &&
@@ -226,15 +237,7 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
       typeof navigator.canShare === "function";
 
     try {
-      await document.fonts?.ready?.catch?.(() => {});
-      await new Promise((resolve) => window.requestAnimationFrame(() => resolve()));
-
-      const canvas = await html2canvas(shareCardRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#f8f5ec",
-        logging: false,
-      });
+      const canvas = await captureShareCard();
       const blob = await new Promise((resolve) => {
         canvas.toBlob((nextBlob) => resolve(nextBlob), "image/png");
       });
@@ -256,11 +259,13 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
         }
       }
 
-      const previewSource = blob ? URL.createObjectURL(blob) : canvas.toDataURL("image/png");
-      if (sharePreviewUrl?.startsWith("blob:")) {
-        URL.revokeObjectURL(sharePreviewUrl);
+      if (blob) {
+        const previewSource = URL.createObjectURL(blob);
+        downloadShareImage(previewSource);
+        window.setTimeout(() => URL.revokeObjectURL(previewSource), 1000);
+      } else {
+        downloadShareImage(canvas.toDataURL("image/png"));
       }
-      setSharePreviewUrl(previewSource);
     } catch (err) {
       console.error("Share failed:", err);
     } finally {
@@ -271,15 +276,8 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
   return (
     <div className="flex h-full w-full flex-col gap-6">
       <Modal
-        isOpen={Boolean(sharePreviewUrl)}
-        onOpenChange={(open) => {
-          if (!open) {
-            if (sharePreviewUrl?.startsWith("blob:")) {
-              URL.revokeObjectURL(sharePreviewUrl);
-            }
-            setSharePreviewUrl(null);
-          }
-        }}
+        isOpen={isSharePreviewOpen}
+        onOpenChange={setIsSharePreviewOpen}
         placement="center"
         backdrop="blur"
         size="2xl"
@@ -289,29 +287,26 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
             <p className="text-[0.65rem] uppercase tracking-[0.14em] text-sage">
               your share card is ready
             </p>
-            {sharePreviewUrl ? (
-              <img
-                src={sharePreviewUrl}
-                alt={`${result?.outfitName || "Design"} share preview`}
-                className="mx-auto max-h-[70vh] w-full rounded-[24px] object-contain shadow-[0_12px_30px_rgba(0,0,0,0.08)]"
+            {result ? (
+              <ShareCard
+                forwardRef={shareCardRef}
+                result={result}
+                selectedFiber={selectedFiberName}
+                score={score}
+                isPreview
               />
             ) : null}
             <div className="flex flex-wrap items-center justify-center gap-3 pb-2">
               <button
                 type="button"
-                onClick={() => downloadShareImage(sharePreviewUrl)}
+                onClick={handleShareExport}
                 className="rounded-full border-2 border-sage bg-sage px-5 py-3 text-sm font-semibold text-white transition-opacity duration-200 hover:opacity-90"
               >
-                download image
+                {isSharing ? "creating..." : "download image"}
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  if (sharePreviewUrl?.startsWith("blob:")) {
-                    URL.revokeObjectURL(sharePreviewUrl);
-                  }
-                  setSharePreviewUrl(null);
-                }}
+                onClick={() => setIsSharePreviewOpen(false)}
                 className="rounded-full border-2 border-sage bg-transparent px-5 py-3 text-sm font-semibold text-sage transition-colors duration-200 hover:bg-sage hover:text-white"
               >
                 close
@@ -519,13 +514,6 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
                   Regenerate
                 </Button>
               </div>
-
-              <ShareCard
-                forwardRef={shareCardRef}
-                result={result}
-                selectedFiber={selectedFiberName}
-                score={score}
-              />
             </CardBody>
           </Card>
         </motion.div>

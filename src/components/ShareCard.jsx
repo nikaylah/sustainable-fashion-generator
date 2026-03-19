@@ -1,12 +1,13 @@
-export default function ShareCard({ result, selectedFiber, score, forwardRef }) {
+export default function ShareCard({ result, selectedFiber, score, forwardRef, isPreview = false }) {
   return (
     <div
       ref={forwardRef}
       style={{
-        position: "fixed",
-        left: "-9999px",
-        top: 0,
-        width: "400px",
+        position: isPreview ? "relative" : "fixed",
+        left: isPreview ? "auto" : "-9999px",
+        top: isPreview ? "auto" : 0,
+        width: isPreview ? "100%" : "400px",
+        maxWidth: "400px",
         height: "500px",
         backgroundColor: "#f8f5ec",
         backgroundImage:
@@ -17,6 +18,10 @@ export default function ShareCard({ result, selectedFiber, score, forwardRef }) 
         alignItems: "center",
         justifyContent: "space-between",
         fontFamily: "serif",
+        borderRadius: isPreview ? "28px" : 0,
+        border: isPreview ? "1px solid rgba(15,30,63,0.06)" : "none",
+        boxShadow: isPreview ? "0 12px 30px rgba(0,0,0,0.08)" : "none",
+        margin: isPreview ? "0 auto" : 0,
       }}
     >
       <p
