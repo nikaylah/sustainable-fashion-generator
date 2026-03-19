@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import html2canvas from "html2canvas";
-import { Button, Card, CardBody } from "@heroui/react";
+import { Button, Card, CardBody, Modal, ModalBody, ModalContent } from "@heroui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import FashionSilhouette from "./FashionSilhouette";
 import InsightPanel from "./InsightPanel";
@@ -189,6 +189,7 @@ function LoadingCard() {
 export default function ResultCard({ result, selections, onGenerateAnother, isLoading }) {
   const [showReasoning, setShowReasoning] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [sharePreviewUrl, setSharePreviewUrl] = useState(null);
   const shareCardRef = useRef(null);
   const selectedFiberName = getSelectedFiberName(result, selections);
   const fiberData = selectedFiberName ? FIBER_LIBRARY[selectedFiberName] : null;
@@ -197,6 +198,14 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
   useEffect(() => {
     setShowReasoning(false);
   }, [result?.outfitName]);
+
+  useEffect(() => {
+    return () => {
+      if (sharePreviewUrl?.startsWith("blob:")) {
+        URL.revokeObjectURL(sharePreviewUrl);
+      }
+    };
+  }, [sharePreviewUrl]);
 
   const downloadShareImage = (downloadSource) => {
     const a = document.createElement("a");
@@ -215,9 +224,6 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
       typeof navigator !== "undefined" &&
       typeof navigator.share === "function" &&
       typeof navigator.canShare === "function";
-    const previewWindow = !supportsNativeFileShare
-      ? window.open("", "_blank", "noopener,noreferrer")
-      : null;
 
     try {
       await document.fonts?.ready?.catch?.(() => {});
@@ -251,61 +257,10 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
       }
 
       const previewSource = blob ? URL.createObjectURL(blob) : canvas.toDataURL("image/png");
-
-      if (previewWindow && !previewWindow.closed) {
-        previewWindow.document.write(`
-          <html>
-            <head>
-              <title>${result.outfitName}</title>
-              <style>
-                body {
-                  margin: 0;
-                  padding: 24px;
-                  font-family: Georgia, serif;
-                  background: #f8f5ec;
-                  color: #3D3027;
-                  display: flex;
-                  flex-direction: column;
-                  align-items: center;
-                  gap: 16px;
-                }
-                img {
-                  max-width: min(100%, 520px);
-                  border-radius: 20px;
-                  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-                }
-                a {
-                  color: white;
-                  background: #7C9A7E;
-                  padding: 12px 20px;
-                  border-radius: 999px;
-                  text-decoration: none;
-                  font-weight: 600;
-                }
-              </style>
-            </head>
-            <body>
-              <img src="${previewSource}" alt="${result.outfitName}" />
-              <a href="${previewSource}" download="${result.outfitName
-                .replace(/\s+/g, "-")
-                .toLowerCase()}.png">download image</a>
-            </body>
-          </html>
-        `);
-        previewWindow.document.close();
-
-        if (blob) {
-          window.setTimeout(() => URL.revokeObjectURL(previewSource), 60000);
-        }
-        return;
+      if (sharePreviewUrl?.startsWith("blob:")) {
+        URL.revokeObjectURL(sharePreviewUrl);
       }
-
-      if (blob) {
-        downloadShareImage(previewSource);
-        window.setTimeout(() => URL.revokeObjectURL(previewSource), 1000);
-      } else {
-        downloadShareImage(canvas.toDataURL("image/png"));
-      }
+      setSharePreviewUrl(previewSource);
     } catch (err) {
       console.error("Share failed:", err);
     } finally {
@@ -315,6 +270,57 @@ export default function ResultCard({ result, selections, onGenerateAnother, isLo
 
   return (
     <div className="flex h-full w-full flex-col gap-6">
+      <Modal
+        isOpen={Boolean(sharePreviewUrl)}
+        onOpenChange={(open) => {
+          if (!open) {
+            if (sharePreviewUrl?.startsWith("blob:")) {
+              URL.revokeObjectURL(sharePreviewUrl);
+            }
+            setSharePreviewUrl(null);
+          }
+        }}
+        placement="center"
+        backdrop="blur"
+        size="2xl"
+      >
+        <ModalContent className="main-card-surface bg-cream">
+          <ModalBody className="gap-4 p-6 text-center">
+            <p className="text-[0.65rem] uppercase tracking-[0.14em] text-sage">
+              your share card is ready
+            </p>
+            {sharePreviewUrl ? (
+              <img
+                src={sharePreviewUrl}
+                alt={`${result?.outfitName || "Design"} share preview`}
+                className="mx-auto max-h-[70vh] w-full rounded-[24px] object-contain shadow-[0_12px_30px_rgba(0,0,0,0.08)]"
+              />
+            ) : null}
+            <div className="flex flex-wrap items-center justify-center gap-3 pb-2">
+              <button
+                type="button"
+                onClick={() => downloadShareImage(sharePreviewUrl)}
+                className="rounded-full border-2 border-sage bg-sage px-5 py-3 text-sm font-semibold text-white transition-opacity duration-200 hover:opacity-90"
+              >
+                download image
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (sharePreviewUrl?.startsWith("blob:")) {
+                    URL.revokeObjectURL(sharePreviewUrl);
+                  }
+                  setSharePreviewUrl(null);
+                }}
+                className="rounded-full border-2 border-sage bg-transparent px-5 py-3 text-sm font-semibold text-sage transition-colors duration-200 hover:bg-sage hover:text-white"
+              >
+                close
+              </button>
+            </div>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
       {isLoading ? <LoadingCard /> : null}
 
       {result ? (
